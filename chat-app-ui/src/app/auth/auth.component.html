@@ -1,0 +1,55 @@
+<h3 *ngIf="currentView === 'login'">Login to your account</h3>
+<h3 *ngIf="currentView === 'signup'">Signup with a new account</h3>
+
+<form #form="ngForm">
+  <div class="input-group mb-3 has-validation">
+    <span class="input-group-text">Email address</span>
+    <input type="text" class="form-control {{signupErrors.email || loginErrors.email ? 'is-invalid' : ''}}" id="exampleInputEmail1"
+      name="email"
+      required
+      email
+      [(ngModel)]="email"
+    />
+    <div class="invalid-feedback" *ngIf="signupErrors?.email">
+      Email already exists. Please login
+    </div>
+    <div class="invalid-feedback" *ngIf="loginErrors?.email">
+      Incorrect Email
+    </div>
+  </div>
+  <div class="input-group mb-3 has-validation" *ngIf="currentView === 'signup'">
+    <span class="input-group-text">Username</span>
+    <input type="text" class="form-control {{signupErrors.username ? 'is-invalid' : ''}}" id="exampleInputUsername"
+      name="username"
+      required
+      minlength="1"
+      [(ngModel)]="username"
+    />
+    <div class="invalid-feedback" *ngIf="signupErrors?.username">
+      Username is taken. Please use another username
+    </div>
+  </div>
+  <div class="input-group mb-3 has-validation">
+    <span class="input-group-text">Password</span>
+    <input [type]="showPassword ? 'text' : 'password'" 
+      class="form-control {{(passwordModel.invalid && passwordModel.touched) || loginErrors.password ? 'is-invalid' : ''}}" 
+      id="exampleInputPassword1"
+      name="password"
+      required
+      minlength="8"
+      pattern="[^ ]{8,}"
+      [(ngModel)]="password"
+      #passwordModel="ngModel"
+    />
+    <button class="input-group-text" (click)="showPassword = !showPassword">{{ showPassword ? 'hide' : 'view' }}</button>
+    <div class="invalid-feedback" *ngIf="(passwordModel.invalid && passwordModel.touched)">
+      Password is required and must be greater than or equal to 8 characters and should not contain spaces 
+    </div>
+    <div class="invalid-feedback" *ngIf="loginErrors?.password">
+      Incorrect password
+    </div>
+  </div>
+  <button [disabled]="form.invalid" type="submit" class="btn btn-primary" (click)="submitForm(form)">
+    {{ currentView === 'login' ? 'Login' : 'Signup' }}
+  </button>
+</form>

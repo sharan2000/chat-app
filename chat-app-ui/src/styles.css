@@ -1,0 +1,16 @@
+a {
+  cursor: pointer;
+}
+
+a.white-text {
+  color: rgb(255 255 255 / 55%)
+}
+
+a.white-text:hover {
+  color: rgb(255 255 255 / 75%)
+}
+
+/* for userimages */
+img.rounded-circle {
+  background-color: #6d6d69;
+}
