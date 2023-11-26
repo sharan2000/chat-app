@@ -1,60 +1,46 @@
-<section style="background-color: #eee;">
-  <div class="container py-5">
-    <div class="row">
-        <ul class="list-unstyled">
-          <div *ngFor="let item of messageArray">
-            <!-- for alerts -->
-            <li class="mb-4" *ngIf="item['message_type'] === 'connection_status'">
-              <div class="alert alert-dark w-1 py-1" role="alert">{{ item['username'] + ' ' + item['message'] }}</div>
-            </li>
-
-            <!-- for messages -->
-            <li class="d-flex mb-4" *ngIf="item['message_type'] === 'message'">
-              <!-- if user then display message in left -->
-              <div *ngIf="item['username'] === authService.userData['username']">
-                <img src="" alt="avatar" class="rounded-circle d-flex align-self-start me-3 shadow-1-strong" width="60">
-              </div>
-              <div class="card w-100">
-                <div class="card-header d-flex justify-content-between p-3">
-                  <p class="fw-bold mb-0">{{ item['username'] }}</p>
-                  <p class="text-muted small mb-0 text-end">{{ item['sent_on'] | date:'MMM d, y, h:mm a' }}</p>
-                </div>
-                <div class="card-body">
-                  <p class="mb-0">{{ item['message'] }}</p>
-                </div>
-              </div>
-              <!-- if not user display message in right -->
-              <div *ngIf="item['username'] !== authService.userData['username']">
-                <img src="" alt="avatar" class="rounded-circle d-flex align-self-start ms-3 shadow-1-strong" width="60">
-              </div>
-            </li>
-          </div>
-          <!-- <li class="d-flex mb-4">
-            <div class="card w-100">
-              <div class="card-header d-flex justify-content-between p-3">
-                <p class="fw-bold mb-0">Lara Croft</p>
-                <p class="text-muted small mb-0 text-end">   13 mins ago</p>
-              </div>
-              <div class="card-body">
-                <p class="mb-0">
-                  Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque
-                  laudantium.
-                </p>
-              </div>
-            </div>
-            <img src="" alt="avatar" class="rounded-circle d-flex align-self-start ms-3 shadow-1-strong" width="60">
-          </li> -->
-          <hr>
-          <li>
-            <div class="mb-3">
-              <!-- <label for="exampleFormControlTextarea1" class="form-label"></label> -->
-              <textarea [(ngModel)]="userEnteredMessage" name="userEnteredMessage" class="form-control" id="exampleFormControlTextarea1" rows="3" placeholder="Enter Message and hit send"></textarea>
-            </div>
-          </li>
-          <button type="button" (click)="sendMessage()" class="btn btn-info btn-rounded float-end">Send</button>
-          <button type="button" (click)="logArray()" class="btn btn-info btn-rounded float-end">log array</button>
-        </ul>
-
+<div class="row">
+  <!-- users and rooms display side panel -->
+  <div class="col-3 px-0 left-panel">
+    <div *ngFor="let item of usersAndRoomsData" class="user" [ngClass]="{ selected: (item.username === selectedChat?.username) }" (click)="chatSelected(item)">
+      <div class="description">
+        <div class="name">
+          {{ item.username }} {{ (item.username === authService.userData.username) ? " (yourself)" : "" }}
+        </div>
+        <div class="status">
+          <i class="icon connected" [ngClass]="{ connected: true }"></i> online
+        </div>
       </div>
+      <!-- if new message are there use below -->
+      <div class="new-messages">!</div>
+    </div>
   </div>
-</section>
+
+  <!-- message panel -->
+  <div class="col-9 px-0">
+    <ng-container *ngIf="selectedChat">
+      <div class="header">
+        <i class="icon" class="icon connected"></i> {{ selectedChat.username }}
+      </div>
+      <ul class="messages">
+        <li *ngFor="let item of messageArray" class="message">
+          <div class="sender">
+            robert
+          </div>
+          this is a message
+        </li>
+      </ul>
+      <form class="form">
+        <textarea [(ngModel)]="userEnteredMessage" name="userEnteredMessage" placeholder="Your message..." class="input"></textarea>
+        <button class="send-button ms-2 btn btn-sm btn-rounded btn-success">Send</button>
+      </form>
+    </ng-container>
+
+    <ng-container *ngIf="!selectedChat">
+      <div class="card m-1 text-center">
+        <div class="card-body">
+          <h5 class="card-title">Please select a chat or a room to see the messages.</h5>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+</div>

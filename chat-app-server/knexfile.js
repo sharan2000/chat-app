@@ -7,6 +7,7 @@ module.exports = {
 
   development: {
     client: 'mysql2',
+    debug: true,
     connection: {
       database: 'my_database',
       user:     'root',

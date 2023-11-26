@@ -10,6 +10,7 @@ export class ChatService {
   CHAT_NAMESPACE = "/chat"
   SERVER_ADDRESS = 'http://127.0.0.1:' + this.SERVER_PORT + this.CHAT_NAMESPACE
   newMessages = new BehaviorSubject<string>('')
+  usersAndRoomsData = new Subject<string[]>()
   socket: any
 
   constructor(
@@ -21,8 +22,10 @@ export class ChatService {
   initializeChatSocket() {
     this.socket = io(this.SERVER_ADDRESS, {
       auth: {
-        Authorization: sessionStorage.getItem('token')
-      }
+        Authorization: sessionStorage.getItem('token'),
+        session_token: sessionStorage.getItem('session_token')
+      },
+      withCredentials: true,
     })
 
     this.socket.on("connect_error", (err: any) => {
@@ -30,6 +33,18 @@ export class ChatService {
       console.log('Error in authentication of socket -- ', err.message);
       // this.authService.logout()
       // this.router.navigate(['/auth'], { queryParams: {type: 'login'} })
+    });
+
+    this.socket.on("users_data", (data: any) => {
+      this.usersAndRoomsData.next(data)
+    });
+
+    this.socket.on("connected_to_session", (session_token: any) => {
+      sessionStorage.setItem('session_token', session_token)
+
+      window.addEventListener("beforeunload", (event) => {
+        this.emitUserExit()
+      })
     });
   }
 
@@ -46,5 +61,9 @@ export class ChatService {
 
   disconnectUser() {
     this.socket.disconnect()
+  }
+
+  emitUserExit() {
+    this.socket.emit('user_exit', true)
   }
 }

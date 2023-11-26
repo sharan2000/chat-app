@@ -5,7 +5,10 @@ let io
 const initSocketServer = (server) => {
   try {
     io = new socketio.Server(server, {
-      cors: {origin : '*'}
+      cors: {
+        origin : "http://localhost:4200",
+        credentials: true,
+      },
     });
     console.log('Socket server started')
     // main root namespace

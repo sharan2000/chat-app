@@ -1,16 +1,88 @@
 a {
   cursor: pointer;
+  text-decoration: none;
 }
 
-a.white-text {
-  color: rgb(255 255 255 / 55%)
+/* here */
+
+.left-panel {
+  background-color: #3f0e40;
+  color: white;
 }
 
-a.white-text:hover {
-  color: rgb(255 255 255 / 75%)
+.header {
+  line-height: 40px;
+  padding: 10px 20px;
+  border-bottom: 1px solid #dddddd;
 }
 
-/* for userimages */
-img.rounded-circle {
-  background-color: #6d6d69;
+.messages {
+  margin: 0;
+  padding: 20px;
+}
+
+.message {
+  list-style: none;
+}
+
+.sender {
+  font-weight: bold;
+  margin-top: 5px;
+}
+
+.form {
+  padding: 10px;
+}
+
+.input {
+  width: 80%;
+  resize: none;
+  padding: 10px;
+  line-height: 1.5;
+  border-radius: 5px;
+  border: 1px solid #000;
+}
+
+.send-button {
+  vertical-align: top;
+}
+
+.icon {
+  height: 8px;
+  width: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  background-color: #e38968;
+  margin-right: 6px;
+}
+
+.icon.connected {
+  background-color: #86bb71;
+}
+
+.selected {
+  background-color: #1164a3;
+}
+
+.user {
+  padding: 10px;
+  cursor: pointer;
+}
+
+.description {
+  display: inline-block;
+}
+
+.status {
+  color: #92959e;
+}
+
+.new-messages {
+  color: white;
+  background-color: red;
+  width: 20px;
+  border-radius: 5px;
+  text-align: center;
+  float: right;
+  margin-top: 10px;
 }

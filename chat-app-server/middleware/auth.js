@@ -19,7 +19,7 @@ const auth_socket_middleware = (socket, next) => {
   const authentication_data = isAuthenticated(authorization)
 
   if(authentication_data.is_authenticated) {
-    socket['user_data'] = authentication_data.user_data
+    socket.username = authentication_data.user_data.username
     next()
   } else {
     const err = new Error('Unauthorized. You do not have privilages to access this.');

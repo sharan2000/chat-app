@@ -12,7 +12,10 @@ export class ChatComponent implements OnInit {
   userEnteredMessage: string = ''
   message: string = 'this is chat screen'
   newMessagesSubscription: Subscription | undefined
+  usersAndRoomsSubscription: Subscription | undefined
   messageArray: any[] = []
+  usersAndRoomsData: any[] = []
+  selectedChat: any
 
   constructor(
     protected authService: AuthService,
@@ -22,6 +25,14 @@ export class ChatComponent implements OnInit {
   ngOnInit() {
     // new user is being connected
     this.chatService.initializeChatSocket()
+
+    this.usersAndRoomsSubscription = this.chatService.usersAndRoomsData.subscribe({
+      next: (data) => {
+        this.usersAndRoomsData = data
+        console.log('in subscription of users and rooms data --', data)
+      }
+    })
+
 
     this.newMessagesSubscription = this.chatService.startReceivingMessage().subscribe({
       next: (body: any) => {
@@ -40,8 +51,9 @@ export class ChatComponent implements OnInit {
     })
   }
 
-  logArray() {
-    console.log('messages array -- ', this.messageArray)
+  chatSelected(selecteItem: any) {
+    console.log('selected chat -- ', selecteItem)
+    this.selectedChat = selecteItem
   }
 
   ngOnDestroy() {

@@ -9,13 +9,15 @@ import { AuthComponent } from './auth/auth.component';
 import { FormsModule } from '@angular/forms'
 import { AuthInterceptor } from './auth/auth.interceptor';
 import { ChatComponent } from './chat/chat.component';
+import { ShortUsernamePipe } from './utils/short-username.pipe';
 
 @NgModule({
   declarations: [
     AppComponent,
     DashboardComponent,
     AuthComponent,
-    ChatComponent
+    ChatComponent,
+    ShortUsernamePipe
   ],
   imports: [
     BrowserModule,
