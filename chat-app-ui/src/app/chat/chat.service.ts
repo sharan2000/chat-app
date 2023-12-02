@@ -23,10 +23,13 @@ export class ChatService {
     this.socket = io(this.SERVER_ADDRESS, {
       auth: {
         Authorization: sessionStorage.getItem('token'),
-        session_token: sessionStorage.getItem('session_token')
       },
       withCredentials: true,
     })
+
+    this.socket.on("send_user_session_token", () => {
+      this.socket.emit('user_session_token', sessionStorage.getItem('session_token'))
+    });
 
     this.socket.on("connect_error", (err: any) => {
       // user not authenticated so loggin out

@@ -1,3 +1,5 @@
+const { v4: uuidv4 } = require('uuid');
+
 const { auth_socket_middleware } = require('../middleware/auth');
 const { getSocketIO } = require('../socket')
 const { getSessionStoreObject } = require('../knexConnection')
@@ -12,12 +14,15 @@ const initializeChatSocket = () => {
   chatNamespace.use(auth_socket_middleware);
 
   chatNamespace.on('connection', async (socket) => {
+    socket.emit('send_user_session_token')
     // identifies if the user is reconnecting or new user. Then reuses the old session or initializes a new session
-    let {identified_session, identified_session_id } = await identify_and_set_session(socket)
-    socket.session_id = identified_session_id
-    socket.session_force_expired = false
 
-    socket.emit('users_data', await getUsersForChatWithStatus(getSessionStoreObject()))
+    socket.on('user_session_token', async (user_session_token) => {
+      socket.session_id = await identify_and_set_session(socket, user_session_token)
+      socket.session_force_expired = false
+
+      chatNamespace.emit('users_data', await getUsersForChatWithStatus())
+    })
 
     socket.on('send_message', (body) => {
       console.log("user sent a message --  ", body);
@@ -27,112 +32,106 @@ const initializeChatSocket = () => {
     // when  user closes the window or clicks logout then we need to remove the session token
     socket.on('user_exit', async () => {
       socket.session_force_expired = true
-      identified_session.cookie.expires = new Date('1970-1-1')
 
-      await (new Promise((resolve, reject) => {
-        identified_session.save((err) => {
-          if(err) {
-            reject(err)
-          }
-          else {
-            ;[ identified_session, identified_session_id ] = [undefined, undefined]
-            console.log('user session deleted for db -- ', identified_session, identified_session_id)
-            resolve()
-          }
-        })
-      })).catch((err) => {
+      await deleteSession(socket.session_id).catch((err) => {
         socket.session_force_expired = false
-        console.log('could not destroy the session in db -- ')
         console.log(err)}
       )
-      console.log("user closed the screen so closed session ********  ");
     })
 
     socket.on("disconnecting", async () => {
-      console.log('here val in disconnect -- ', socket.session_force_expired)
       // change status only if user is disconnected. If the user exits the app we already delete the session in 'user_exit' event
       if(!socket.session_force_expired) {
+        const identified_session = await getSession(socket.session_id).catch((err) => { console.log(err) })
         identified_session.user_data.connected = false
-        await (new Promise((resolve, reject) => {
-          getSessionStoreObject().set(identified_session_id, identified_session, (err) => {
-            if(err) { reject(err) }
-            else { resolve() }
-          })
-        })).catch((err) => {
+        await setSession(socket.session_id, identified_session).catch((err) => {
           console.log('could not set the user status to disconnected when socket disconnected -- ', err)
         })
       }
-      
-      // chatNamespace.emit('new_message', {
-      //   username: socket.username,
-      //   message: 'user disconnected',
-      //   message_type: 'connection_status'
-      // })
     });
   })
 }
 
+const identify_and_set_session = async (socket, user_session_token) => {
+  let identified_session, identified_session_id, exp_date, duration = 24 * 60 * 60 * 1000
 
-const identify_and_set_session = async (socket) => {
-  let identified_session, identified_session_id
+  let session_token = user_session_token
+  console.log('incoming connecting data -- ', socket.username, ' => ', session_token)
+  try {
+    if(session_token) {
+      const session = await getSession(session_token)
 
-  // getting the sessiontoken if it is sent. It means that a old user reconnected. Or we create a new sessiontoken and pass to store in session storage of client
-  let session_token = socket.handshake.auth['session_token']
-  console.log('auth data -- ', socket.handshake.auth)
-  if(session_token) {
-    try {
-      // check if valid session token by getting the linked session object
-      const session = await new Promise((resolve, reject) => {
-        getSessionStoreObject().get(session_token, (err, session) => {
-          if(err) {
-            console.log('could not get the session object -- ', err)
-            reject()
-          } else {
-            console.log('session fetched -- ', session)
-            resolve(session)
-          }
-        })
-      })
-
-      console.log('session object -- ', session)
       if(session) {
-        // session is there
         identified_session = session
         identified_session_id = session_token
       } else {
         throw new Error('create session in catch block')
       }  
-    } catch(err) {
-      console.log('in error')
-      identified_session = socket.request.session;
-      identified_session_id = socket.request.session.id
+    } else {
+      throw new Error('create session in catch block')
     }
-  } else {
-    identified_session = socket.request.session;
-    identified_session_id = socket.request.session.id
+  } catch(err) {
+    identified_session_id = uuidv4()
+    identified_session = {
+      "cookie": {
+        "expires": '', 
+      }, 
+      "user_data": {}
+    }
+  }
+  
+  exp_date = new Date()
+  exp_date.setTime(exp_date.getTime() + duration);
+  identified_session.cookie.expires = exp_date
+  identified_session.user_data = {
+    "username": socket.username, 
+    "connected": true
   }
 
-  identified_session.user_data = {
-    username: socket.username,
-    connected: true 
-  }
-  await new Promise((resolve, reject) => {
-    getSessionStoreObject().set(identified_session_id, identified_session, (err) => {
+  await setSession(identified_session_id, identified_session).then(() => {
+    socket.emit('connected_to_session', identified_session_id)
+  }).catch((err) => { console.log(err) })
+
+  return identified_session_id
+}
+
+const getSession = async (sessionId) => {
+  return new Promise((resolve, reject) => {
+    getSessionStoreObject().get(sessionId, (err, session) => {
       if(err) {
-        console.log('could not set the identified session object -- ', err)
-        reject()
+        reject(err)
       } else {
-        socket.emit('connected_to_session', identified_session_id)
+        resolve(session)
+      }
+    })
+  }) 
+}
+
+
+const setSession = async (sessionId, sessionObject) => {
+  return new Promise((resolve, reject) => {
+    getSessionStoreObject().set(sessionId, sessionObject, (err) => {
+      if(err) {
+        reject(err)
+      } else {
         resolve()
       }
     })
   })
-  // above code is used to identify if the user is reconnecting or not and based on that we create a new session or use an existing one for that user
+}
 
-  return {
-    identified_session,
-    identified_session_id
-  }
+
+
+const deleteSession = async (sessionId) => {
+  return new Promise((resolve, reject) => {
+    getSessionStoreObject().destroy(sessionId, (err) => {
+      if(err) {
+        reject(err)
+      } else {
+        resolve()
+      }
+    })
+  })
 }
 
 

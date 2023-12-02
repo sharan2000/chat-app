@@ -16,6 +16,7 @@ export class ChatComponent implements OnInit {
   messageArray: any[] = []
   usersAndRoomsData: any[] = []
   selectedChat: any
+  authLoggedInSubscription: Subscription|undefined
 
   constructor(
     protected authService: AuthService,
@@ -25,6 +26,14 @@ export class ChatComponent implements OnInit {
   ngOnInit() {
     // new user is being connected
     this.chatService.initializeChatSocket()
+
+    this.authLoggedInSubscription = this.authService.authLoggedIn.subscribe({
+      next: (isLoggedIn: boolean) => {
+        if(!isLoggedIn) {
+          this.chatService.emitUserExit()
+        }
+      }
+    })
 
     this.usersAndRoomsSubscription = this.chatService.usersAndRoomsData.subscribe({
       next: (data) => {
@@ -57,8 +66,10 @@ export class ChatComponent implements OnInit {
   }
 
   ngOnDestroy() {
-    this.chatService.disconnectUser()
     this.newMessagesSubscription?.unsubscribe()
+    this.usersAndRoomsSubscription?.unsubscribe()
+    this.authLoggedInSubscription?.unsubscribe()
+    this.chatService.disconnectUser()
   }
 
 }

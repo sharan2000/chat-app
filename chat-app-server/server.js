@@ -24,7 +24,10 @@ const sessionMiddleware = session({
   secret: 'my session secret',
   resave: false,
   saveUninitialized: false,
-  store
+  store,
+  cookie: {
+    maxAge: 24 * 60 * 60 * 1000 // for 24 hours
+  }
 })
 
 //setting headers to remove cors error
