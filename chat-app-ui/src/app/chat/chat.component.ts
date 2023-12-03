@@ -13,8 +13,10 @@ export class ChatComponent implements OnInit {
   message: string = 'this is chat screen'
   newMessagesSubscription: Subscription | undefined
   usersAndRoomsSubscription: Subscription | undefined
+  userStatusSubscription: Subscription | undefined
   messageArray: any[] = []
-  usersAndRoomsData: any[] = []
+  usersAndRoomsObject: any
+  usersAndRoomsValues: any
   selectedChat: any
   authLoggedInSubscription: Subscription|undefined
 
@@ -37,8 +39,17 @@ export class ChatComponent implements OnInit {
 
     this.usersAndRoomsSubscription = this.chatService.usersAndRoomsData.subscribe({
       next: (data) => {
-        this.usersAndRoomsData = data
+        this.usersAndRoomsObject = data
+        this.usersAndRoomsValues = Object.values(this.usersAndRoomsObject)
         console.log('in subscription of users and rooms data --', data)
+      }
+    })
+
+
+    this.userStatusSubscription = this.chatService.userStatus.subscribe({
+      next: (userStatus: any) => {
+        this.usersAndRoomsObject[userStatus.username].connected = userStatus.connected
+        console.log('in subscription of user status --', userStatus)
       }
     })
 
@@ -69,6 +80,7 @@ export class ChatComponent implements OnInit {
     this.newMessagesSubscription?.unsubscribe()
     this.usersAndRoomsSubscription?.unsubscribe()
     this.authLoggedInSubscription?.unsubscribe()
+    this.userStatusSubscription?.unsubscribe()
     this.chatService.disconnectUser()
   }
 

@@ -11,6 +11,7 @@ export class ChatService {
   SERVER_ADDRESS = 'http://127.0.0.1:' + this.SERVER_PORT + this.CHAT_NAMESPACE
   newMessages = new BehaviorSubject<string>('')
   usersAndRoomsData = new Subject<string[]>()
+  userStatus = new Subject<any>()
   socket: any
 
   constructor(
@@ -38,8 +39,12 @@ export class ChatService {
       // this.router.navigate(['/auth'], { queryParams: {type: 'login'} })
     });
 
-    this.socket.on("users_data", (data: any) => {
+    this.socket.on("users_and_rooms_data", (data: any) => {
       this.usersAndRoomsData.next(data)
+    });
+
+    this.socket.on("user_connection_status", (userStatus: any) => {
+      this.userStatus.next(userStatus)
     });
 
     this.socket.on("connected_to_session", (session_token: any) => {

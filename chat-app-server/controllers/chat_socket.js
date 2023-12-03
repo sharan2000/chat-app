@@ -21,7 +21,11 @@ const initializeChatSocket = () => {
       socket.session_id = await identify_and_set_session(socket, user_session_token)
       socket.session_force_expired = false
 
-      chatNamespace.emit('users_data', await getUsersForChatWithStatus())
+      socket.emit('users_and_rooms_data', await getUsersForChatWithStatus())
+      socket.broadcast.emit('user_connection_status', {
+        username: socket.username,
+        connected: true
+      })
     })
 
     socket.on('send_message', (body) => {
@@ -33,7 +37,12 @@ const initializeChatSocket = () => {
     socket.on('user_exit', async () => {
       socket.session_force_expired = true
 
-      await deleteSession(socket.session_id).catch((err) => {
+      await deleteSession(socket.session_id).then(() => {
+        socket.broadcast.emit('user_connection_status', {
+          username: socket.username,
+          connected: false
+        })
+      }).catch((err) => {
         socket.session_force_expired = false
         console.log(err)}
       )
@@ -44,7 +53,12 @@ const initializeChatSocket = () => {
       if(!socket.session_force_expired) {
         const identified_session = await getSession(socket.session_id).catch((err) => { console.log(err) })
         identified_session.user_data.connected = false
-        await setSession(socket.session_id, identified_session).catch((err) => {
+        await setSession(socket.session_id, identified_session).then(() => {
+          socket.broadcast.emit('user_connection_status', {
+            username: socket.username,
+            connected: false
+          })
+        }).catch((err) => {
           console.log('could not set the user status to disconnected when socket disconnected -- ', err)
         })
       }

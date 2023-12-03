@@ -1,7 +1,7 @@
 <div class="row">
   <!-- users and rooms display side panel -->
   <div class="col-3 px-0 left-panel">
-    <div *ngFor="let item of usersAndRoomsData" class="user" [ngClass]="{ selected: (item.username === selectedChat?.username) }" (click)="chatSelected(item)">
+    <div *ngFor="let item of usersAndRoomsValues" class="user" [ngClass]="{ selected: (item.username === selectedChat?.username) }" (click)="chatSelected(item)">
       <div class="description">
         <div class="name">
           {{ item.username }} {{ (item.username === authService.userData.username) ? " (yourself)" : "" }}

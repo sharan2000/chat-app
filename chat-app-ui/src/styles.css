@@ -3,6 +3,15 @@ a {
   text-decoration: none;
 }
 
+a.white-text {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+a.white-text:hover {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+
 /* here */
 
 .left-panel {

@@ -12,24 +12,23 @@ const getUsersForChatWithStatus = async () => {
   } catch(err) {
     console.log("error in getUsersForChatWithStatus -- ", err)
   }
-  let userDetailsObject = {}
+  let userDetailsAndRoomsObject = {}
   users.forEach(userData => {
-    userDetailsObject[userData.username] = {
+    userDetailsAndRoomsObject[userData.username] = {
       username: userData.username,
       connected: false
     }
   })
 
   store_users.forEach(store_user => {
-    userDetailsObject[store_user.user_data.username] = {
+    userDetailsAndRoomsObject[store_user.user_data.username] = {
       username: store_user.user_data.username,
       connected: store_user.user_data.connected
     }
   })
 
-  const userDetailsAndStatus = Object.values(userDetailsObject)
-  console.log(userDetailsAndStatus)
-  return userDetailsAndStatus
+  console.log(userDetailsAndRoomsObject)
+  return userDetailsAndRoomsObject
 }
 
 const getAllSessions = async () => {
