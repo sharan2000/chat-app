@@ -1,5 +1,7 @@
 const Users = require("../models/users")
+const Messages = require("../models/messages")
 const { getSessionStoreObject } = require('../knexConnection')
+const { raw } = require("objection")
 
 const getUsersForChatWithStatus = async () => {
   let users = [], store_users = []
@@ -31,6 +33,11 @@ const getUsersForChatWithStatus = async () => {
   return userDetailsAndRoomsObject
 }
 
+const addNewMessage = async (messageData) => {
+  await Messages.query().insert(messageData)
+  console.log('Message added succesfully')
+}
+
 const getAllSessions = async () => {
   return new Promise((resolve, reject) => {
     getSessionStoreObject().all((err, sessions) => { 
@@ -45,18 +52,39 @@ const getAllSessions = async () => {
 
 const getChat = async (req, res, next) => {
   console.log("entered into api : /get_chat");
-  const payload = req.body
-  console.log('payload -- ', payload)
-  res.status(200).json({
-    messages: [{
-      name: payload.from, message: 'hello1'
-    }, {
-      name: payload.to, message: 'hello2'
-    }]
+  let messages, success, status, error
+  try {
+    const payload = req.body
+    const { from, to } = payload
+    console.log('payload -- ', payload)
+
+    // get messages
+    const mtn = Messages.tableName
+    messages = await Messages.query()
+    .select('from as name', 'message')
+    .where(raw(`(${mtn}.from = ? AND ${mtn}.to = ?)`, from, to))
+    .orWhere(raw(`(${mtn}.from = ? AND ${mtn}.to = ?)`, to, from))
+    .orderBy('time')
+    console.log('messages are -- ', messages)
+
+    success = true
+    status = 200
+  } catch(err) {
+    messages = []
+    success = false
+    status = 200
+    error = 'Error when getting messages'
+    console.log('error in get messages -- ', err)
+  }
+  res.status(status).json({
+    messages,
+    success,
+    error
   })
 }
 
 module.exports = {
   getUsersForChatWithStatus,
-  getChat
+  getChat,
+  addNewMessage
 }

@@ -22,7 +22,7 @@
         <i class="icon" [ngClass]="{ connected: selectedChat.connected }"></i> {{ selectedChat.username }}
       </div>
       <ng-container *ngIf="!chatSpinner">
-        <ul class="messages">
+        <ul class="messages" *ngIf="messageArray.length">
           <li *ngFor="let item of messageArray" class="message">
             <div class="sender">
               {{ item.name !== this.authService.userData['username'] ? item.name : item.name + '(YOU)' }}
@@ -30,6 +30,11 @@
             {{ item.message }}
           </li>
         </ul>
+        <div class="card m-1 text-center" *ngIf="messageArray.length < 1">
+          <div class="card-body">
+            <h5 class="card-title">No messages found. Send a message and start a conversation.</h5>
+          </div>
+        </div>
         <form class="form">
           <textarea [(ngModel)]="userEnteredMessage" #message="ngModel" name="userEnteredMessage" placeholder="Your message... (should contain less than or equal to 3000 characters)" class="input" required minLength="1" maxLength="1000" (keyup)="removeExtraSpaces($event)"></textarea>
           <button class="send-button ms-2 btn btn-sm btn-rounded btn-success" [disabled]="!message.valid" (click)="sendMessage()">Send</button>

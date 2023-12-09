@@ -4,7 +4,7 @@ const { auth_socket_middleware } = require('../middleware/auth');
 const { getSocketIO } = require('../socket')
 const { getSessionStoreObject } = require('../knexConnection')
 
-const { getUsersForChatWithStatus } = require("./chat")
+const { getUsersForChatWithStatus, addNewMessage } = require("./chat")
 
 const initializeChatSocket = () => {
   const socketIO = getSocketIO()
@@ -30,12 +30,17 @@ const initializeChatSocket = () => {
       socket.join(socket.username);
     })
 
-    socket.on('send_message', (messageData) => {
+    socket.on('send_message', async (messageData) => {
       console.log("user sent a message --  ", messageData);
-      chatNamespace.to(messageData.from).to(messageData.to).emit('new_message', {
-        name: messageData.from,
-        message: messageData.message
-      })
+      try {
+        await addNewMessage(messageData)
+        chatNamespace.to(messageData.from).to(messageData.to).emit('new_message', {
+          name: messageData.from,
+          message: messageData.message
+        })
+      } catch(err) {
+        console.log('Error could not send user message -- ', err)
+      }
     })
 
     // when  user closes the window or clicks logout then we need to remove the session token
