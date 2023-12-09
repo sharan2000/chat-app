@@ -43,6 +43,20 @@ const getAllSessions = async () => {
   }) 
 }
 
+const getChat = async (req, res, next) => {
+  console.log("entered into api : /get_chat");
+  const payload = req.body
+  console.log('payload -- ', payload)
+  res.status(200).json({
+    messages: [{
+      name: payload.from, message: 'hello1'
+    }, {
+      name: payload.to, message: 'hello2'
+    }]
+  })
+}
+
 module.exports = {
-  getUsersForChatWithStatus
+  getUsersForChatWithStatus,
+  getChat
 }

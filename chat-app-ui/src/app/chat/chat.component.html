@@ -21,18 +21,22 @@
       <div class="header">
         <i class="icon" [ngClass]="{ connected: selectedChat.connected }"></i> {{ selectedChat.username }}
       </div>
-      <ul class="messages">
-        <li *ngFor="let item of messageArray" class="message">
-          <div class="sender">
-            robert
-          </div>
-          this is a message
-        </li>
-      </ul>
-      <form class="form">
-        <textarea [(ngModel)]="userEnteredMessage" name="userEnteredMessage" placeholder="Your message..." class="input"></textarea>
-        <button class="send-button ms-2 btn btn-sm btn-rounded btn-success">Send</button>
-      </form>
+      <ng-container *ngIf="!chatSpinner">
+        <ul class="messages">
+          <li *ngFor="let item of messageArray" class="message">
+            <div class="sender">
+              {{ item.name !== this.authService.userData['username'] ? item.name : item.name + '(YOU)' }}
+            </div>
+            {{ item.message }}
+          </li>
+        </ul>
+        <form class="form">
+          <textarea [(ngModel)]="userEnteredMessage" #message="ngModel" name="userEnteredMessage" placeholder="Your message... (should contain less than or equal to 3000 characters)" class="input" required minLength="1" maxLength="1000" (keyup)="removeExtraSpaces($event)"></textarea>
+          <button class="send-button ms-2 btn btn-sm btn-rounded btn-success" [disabled]="!message.valid" (click)="sendMessage()">Send</button>
+        </form>
+      </ng-container>
+
+      <div class="lds-facebook" *ngIf="chatSpinner"><div></div><div></div><div></div></div>
     </ng-container>
 
     <ng-container *ngIf="!selectedChat">

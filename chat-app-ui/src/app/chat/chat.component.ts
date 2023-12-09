@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from "@angular/core";
 import { ChatService } from "./chat.service";
 import { Subscription } from "rxjs";
 import { AuthService } from "../auth/auth.service";
+import { ApiService } from "../api.service";
 
 @Component({
     selector: 'app-chat',
@@ -19,14 +20,16 @@ export class ChatComponent implements OnInit {
   usersAndRoomsValues: any
   selectedChat: any
   authLoggedInSubscription: Subscription|undefined
+  chatSpinner = false
 
   constructor(
     protected authService: AuthService,
-    private chatService: ChatService
+    private chatService: ChatService,
+    private apiService: ApiService
   ) {}
 
   ngOnInit() {
-    // new user is being connected
+// new user is being connected
     this.chatService.initializeChatSocket()
 
     this.authLoggedInSubscription = this.authService.authLoggedIn.subscribe({
@@ -64,16 +67,35 @@ export class ChatComponent implements OnInit {
   sendMessage() {
     console.log('sending')
     this.chatService.sendMessage({
-      username: this.authService.userData['username'],
+      from: this.authService.userData['username'],
+      to: this.selectedChat.username,
       message: this.userEnteredMessage,
-      message_type: 'message',
-      sent_on: new Date()
     })
+    this.userEnteredMessage = ''
   }
 
   chatSelected(selecteItem: any) {
+    this.chatSpinner = true
     console.log('selected chat -- ', selecteItem)
     this.selectedChat = selecteItem
+    let payload = {
+      from: this.authService.userData.username,
+      to: selecteItem.username
+    }
+    this.apiService.callApi('get_chat', 'POST', payload).subscribe({
+      next: (response: any) => {
+        console.log(`chat between '${this.authService.userData.username}' and '${selecteItem.username}' -- `, response)
+        this.messageArray = response.messages
+        this.chatSpinner = false
+      },
+      error: (errorResponse: any) => {
+        this.chatSpinner = false
+      }
+    })
+  }
+
+  removeExtraSpaces(event: any) {
+    this.userEnteredMessage = this.userEnteredMessage.replace(/ {2,}/g, '')
   }
 
   ngOnDestroy() {

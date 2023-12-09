@@ -26,11 +26,16 @@ const initializeChatSocket = () => {
         username: socket.username,
         connected: true
       })
+      // for single one to one commmunication we create a room with the username
+      socket.join(socket.username);
     })
 
-    socket.on('send_message', (body) => {
-      console.log("user sent a message --  ", body);
-      chatNamespace.emit('new_message', body)
+    socket.on('send_message', (messageData) => {
+      console.log("user sent a message --  ", messageData);
+      chatNamespace.to(messageData.from).to(messageData.to).emit('new_message', {
+        name: messageData.from,
+        message: messageData.message
+      })
     })
 
     // when  user closes the window or clicks logout then we need to remove the session token
