@@ -59,6 +59,7 @@ export class ChatComponent implements OnInit {
 
     this.newMessagesSubscription = this.chatService.startReceivingMessage().subscribe({
       next: (body: any) => {
+        console.log('new message -- ', body)
         this.messageArray.push(body)
       }
     })

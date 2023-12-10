@@ -1,4 +1,5 @@
 const { v4: uuidv4 } = require('uuid');
+const moment = require('moment');
 
 const { auth_socket_middleware } = require('../middleware/auth');
 const { getSocketIO } = require('../socket')
@@ -33,10 +34,13 @@ const initializeChatSocket = () => {
     socket.on('send_message', async (messageData) => {
       console.log("user sent a message --  ", messageData);
       try {
+        let currtime = moment.utc() // getting UTC time (Coordinated Universal Time returns value irrespective of time zones)
+        messageData.time = currtime.format('Y-MM-DD HH:mm:ss.SSSSSS');
         await addNewMessage(messageData)
         chatNamespace.to(messageData.from).to(messageData.to).emit('new_message', {
           name: messageData.from,
-          message: messageData.message
+          message: messageData.message,
+          time: currtime.toISOString() // converting to ISO so that frontend can parse it to local time
         })
       } catch(err) {
         console.log('Error could not send user message -- ', err)

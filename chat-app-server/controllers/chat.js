@@ -61,7 +61,7 @@ const getChat = async (req, res, next) => {
     // get messages
     const mtn = Messages.tableName
     messages = await Messages.query()
-    .select('from as name', 'message')
+    .select(raw(`${mtn}.from as name, ${mtn}.message, DATE_FORMAT(${mtn}.time, '%Y-%m-%dT%TZ') as time`)) // converting to ISO so that frontend can parse it to local time
     .where(raw(`(${mtn}.from = ? AND ${mtn}.to = ?)`, from, to))
     .orWhere(raw(`(${mtn}.from = ? AND ${mtn}.to = ?)`, to, from))
     .orderBy('time')
