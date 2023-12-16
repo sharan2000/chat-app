@@ -2,6 +2,15 @@ body{
   background-color: #f4f7f6;
 }
 
+.list-type {
+  font-size: 1rem;
+}
+
+.username-above-message {
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
 a {
   cursor: pointer;
   text-decoration: none;

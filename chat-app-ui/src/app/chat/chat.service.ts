@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core'
 import { BehaviorSubject, Subject } from 'rxjs'
 import { io } from 'socket.io-client'
 import { Router } from '@angular/router'
+import { UserDataType, RoomDataType } from '../utils/data-types'
 
 @Injectable()
 export class ChatService {
@@ -9,7 +10,10 @@ export class ChatService {
   CHAT_NAMESPACE = "/chat"
   SERVER_ADDRESS = 'http://127.0.0.1:' + this.SERVER_PORT + this.CHAT_NAMESPACE
   newMessages = new BehaviorSubject<string>('')
-  usersAndRoomsData = new Subject<string[]>()
+  usersAndRoomsData = new Subject<{
+    usersData : UserDataType
+    roomsData : RoomDataType
+  }>()
   userStatus = new Subject<any>()
   socket: any
 
@@ -36,7 +40,10 @@ export class ChatService {
       // this.router.navigate(['/auth'], { queryParams: {type: 'login'} })
     });
 
-    this.socket.on("users_and_rooms_data", (data: any) => {
+    this.socket.on("users_and_rooms_data", (data: {
+      usersData : UserDataType
+      roomsData : RoomDataType
+    }) => {
       this.usersAndRoomsData.next(data)
     });
 

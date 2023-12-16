@@ -5,7 +5,7 @@ const { auth_socket_middleware } = require('../middleware/auth');
 const { getSocketIO } = require('../socket')
 const { getSessionStoreObject } = require('../knexConnection')
 
-const { getUsersForChatWithStatus, addNewMessage } = require("./chat")
+const { getUsersForChatWithStatus, addNewMessage, getRoomsData } = require("./chat")
 
 const initializeChatSocket = () => {
   const socketIO = getSocketIO()
@@ -22,7 +22,16 @@ const initializeChatSocket = () => {
       socket.session_id = await identify_and_set_session(socket, user_session_token)
       socket.session_force_expired = false
 
-      socket.emit('users_and_rooms_data', await getUsersForChatWithStatus())
+      const usersData = await getUsersForChatWithStatus()
+      const roomsData = getRoomsData()
+      // we should add our user to all the rooms
+      Object.keys(roomsData).forEach((room_name) => {
+        socket.join(room_name);
+      })
+      socket.emit('users_and_rooms_data', {
+        usersData,
+        roomsData
+      })
       socket.broadcast.emit('user_connection_status', {
         username: socket.username,
         connected: true
@@ -35,13 +44,26 @@ const initializeChatSocket = () => {
       console.log("user sent a message --  ", messageData);
       try {
         let currtime = moment.utc() // getting UTC time (Coordinated Universal Time returns value irrespective of time zones)
+        console.log('*************** here ****************', currtime)
         messageData.time = currtime.format('Y-MM-DD HH:mm:ss.SSSSSS');
         await addNewMessage(messageData)
-        chatNamespace.to(messageData.from).to(messageData.to).emit('new_message', {
-          name: messageData.from,
-          message: messageData.message,
-          time: currtime.toISOString() // converting to ISO so that frontend can parse it to local time
-        })
+        // if the message is sent to a user then we do this
+        if(messageData.selected_is_user) {
+          chatNamespace.to(messageData.from).to(messageData.to).emit('new_message', {
+            name: messageData.from,
+            message: messageData.message,
+            time: currtime.toISOString(), // converting to ISO so that frontend can parse it to local time
+            message_window_name: messageData.to // identify the user or room that is select when sending this message
+          })
+        } else {
+        // if a message is sent to a room we do this
+          chatNamespace.to(messageData.to).emit('new_message', {
+            name: messageData.from,
+            message: messageData.message,
+            time: currtime.toISOString(), // converting to ISO so that frontend can parse it to local time
+            message_window_name: messageData.to // identify the user or room that is select when sending this message
+          })
+        }
       } catch(err) {
         console.log('Error could not send user message -- ', err)
       }

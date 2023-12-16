@@ -10,28 +10,31 @@
             </div> -->
             <input type="text" class="form-control" placeholder="Search...">
           </div>
+          <hr>
+          <!-- users data div below -->
           <ul class="list-unstyled chat-list mt-2 mb-0">
-            <li *ngFor="let item of usersAndRoomsValues" class="clearfix" [ngClass]="{ active: (item.username === selectedChat?.username) }" (click)="chatSelected(item)">
+            <li class="clearfix">
+              <span class="badge bg-secondary list-type"> Users </span>
+            </li>
+            <li *ngFor="let item of usersDataValues" class="clearfix" [ngClass]="{ active: (item.username === selectedChat?.name) }" (click)="chatSelected(item)">
               <!-- <img src="https://bootdey.com/img/Content/avatar/avatar1.png" alt="avatar"> -->
               <div class="about">
                 <div class="name">{{ item.username }} {{ (item.username === authService.userData.username) ? " (yourself)" : "" }}</div>
                 <div class="status"> <i class="icon" [ngClass]="{ connected: item.connected }"></i> {{item.connected ? 'online' : 'offline'}} </div>                                       
               </div>
             </li>
-            <!-- <li class="clearfix active">
-              <img src="https://bootdey.com/img/Content/avatar/avatar2.png" alt="avatar">
-              <div class="about">
-                <div class="name">Aiden Chavez</div>
-                <div class="status"> <i class="icon" [ngClass]="{ connected: true }"></i> {{'online'}} </div> 
-              </div>
-            </li>                                  
+          </ul>
+          <hr>
+          <!-- rooms data div below -->
+          <ul class="list-unstyled chat-list mt-2 mb-0">
             <li class="clearfix">
-              <img src="https://bootdey.com/img/Content/avatar/avatar7.png" alt="avatar">
+              <span class="badge bg-secondary list-type"> Rooms </span>
+            </li>
+            <li *ngFor="let item of roomsDataValues" class="clearfix" [ngClass]="{ active: (item.room_name === selectedChat?.name) }" (click)="chatRoomSelected(item)">
               <div class="about">
-                <div class="name">Christian Kelly</div>
-                <div class="status"> <i class="icon" [ngClass]="{ connected: false }"></i> {{'offline'}} </div> 
+                <div class="name">{{ item.room_name }}</div>                                      
               </div>
-            </li> -->
+            </li>
           </ul>
         </div>
 
@@ -45,8 +48,8 @@
                       <img src="https://bootdey.com/img/Content/avatar/avatar2.png" alt="avatar">
                     </a> -->
                     <div class="chat-about">
-                      <h6 class="m-b-0">{{ selectedChat.username }}</h6>
-                      <div class="status"> <i class="icon" [ngClass]="{ connected: selectedChat.connected }"></i> {{ selectedChat.connected ? 'online' : 'offline' }}</div> 
+                      <h6 class="m-b-0">{{ selectedChat.name }}</h6>
+                      <div class="status" *ngIf="selectedChat.is_user"> <i class="icon" [ngClass]="{ connected: selectedChat.connected }"></i> {{ selectedChat.connected ? 'online' : 'offline' }}</div> 
                     </div>
                 </div>
                 <!-- <div class="col-lg-6 hidden-sm text-right">
@@ -67,7 +70,9 @@
                         <span class="message-data-time">{{ item.time | date:'d/M/yy, h:mm a' }}</span>
                         <!-- <img src="https://bootdey.com/img/Content/avatar/avatar7.png" alt="avatar"> -->
                       </div>
-                      <div class="message other-message float-right">{{ item.message }}</div>
+                      <div class="message other-message float-right">
+                        {{ item.message }}
+                      </div>
                     </ng-container>
 
                     <!-- others messages -->
@@ -75,7 +80,11 @@
                       <div class="message-data">
                         <span class="message-data-time">{{ item.time | date:'d/M/yy, h:mm a' }}</span>
                       </div>
-                      <div class="message my-message">{{ item.message }}</div>    
+                      <div class="message my-message">
+                        <!-- only in rooms we show usernames above messages -->
+                        <div *ngIf="!selectedChat.is_user" class="username-above-message">{{ '~ ' + item.name }}</div>
+                        {{ item.message }}
+                      </div>    
                     </ng-container>
                   </li>
                 </ul>

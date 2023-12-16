@@ -3,6 +3,14 @@ const Messages = require("../models/messages")
 const { getSessionStoreObject } = require('../knexConnection')
 const { raw } = require("objection")
 
+/*
+  - generally we should get this romm names from the database.
+  - in the database the user with admin status will add rooms.
+  - whenever a new user logs in we send him the users list along with the rooms list
+  - for now we just use this const array. Adding admin panel and giving option to add rooms is a enhancement
+*/
+const ROOMS = ['room1', 'room2', 'room3']
+
 const getUsersForChatWithStatus = async () => {
   let users = [], store_users = []
   try {
@@ -33,8 +41,25 @@ const getUsersForChatWithStatus = async () => {
   return userDetailsAndRoomsObject
 }
 
+const getRoomsData = () => {
+  // normally we should write a query to get rooms data from the DB. For now we use the const array
+  const data = {}
+  ROOMS.forEach(name => {
+    data[name] = {
+      room_name: name,
+      // we can add any additional information in future
+    }
+  })
+  return data
+}
+
 const addNewMessage = async (messageData) => {
-  await Messages.query().insert(messageData)
+  await Messages.query().insert({
+    from: messageData.from,
+    to: messageData.to,
+    message: messageData.message,
+    time: messageData.time
+  })
   console.log('Message added succesfully')
 }
 
@@ -83,8 +108,42 @@ const getChat = async (req, res, next) => {
   })
 }
 
+const getChatForRoom = async (req, res, next) => {
+  console.log("entered into api : /get_chat_for_room");
+  let messages, success, status, error
+  try {
+    const payload = req.body
+    const { to } = payload
+    console.log('payload -- ', payload)
+
+    // get messages
+    const mtn = Messages.tableName
+    messages = await Messages.query()
+    .select(raw(`${mtn}.from as name, ${mtn}.message, DATE_FORMAT(${mtn}.time, '%Y-%m-%dT%TZ') as time`)) // converting to ISO so that frontend can parse it to local time
+    .where(raw(`${mtn}.to = ?`, to))
+    .orderBy('time')
+    console.log('room messages are -- ', messages)
+
+    success = true
+    status = 200
+  } catch(err) {
+    messages = []
+    success = false
+    status = 200
+    error = 'Error when getting messages'
+    console.log('error in get messages -- ', err)
+  }
+  res.status(status).json({
+    messages,
+    success,
+    error
+  })
+}
+
 module.exports = {
   getUsersForChatWithStatus,
   getChat,
-  addNewMessage
+  addNewMessage,
+  getRoomsData,
+  getChatForRoom
 }
