@@ -78,6 +78,7 @@ export class ChatComponent implements OnInit {
             message: body.message,
             time: body.time
           })
+          this.scrollToBottomOfChat(true) // true for smooth scroll
         }
       }
     })
@@ -142,10 +143,11 @@ export class ChatComponent implements OnInit {
     })
   }
 
-  scrollToBottomOfChat() {
+  scrollToBottomOfChat(smooth = false) {
     setTimeout(() => {
       window.scrollTo({
-        top: document.body.scrollHeight
+        top: document.body.scrollHeight,
+        behavior: smooth ? "smooth" : 'instant' 
       });
     }, 15)
   }
