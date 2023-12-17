@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core'
-import { BehaviorSubject, Subject } from 'rxjs'
+import { Subject } from 'rxjs'
 import { io } from 'socket.io-client'
 import { Router } from '@angular/router'
 import { UserDataType, RoomDataType } from '../utils/data-types'
@@ -9,7 +9,7 @@ export class ChatService {
   SERVER_PORT = 1111
   CHAT_NAMESPACE = "/chat"
   SERVER_ADDRESS = 'http://127.0.0.1:' + this.SERVER_PORT + this.CHAT_NAMESPACE
-  newMessages = new BehaviorSubject<string>('')
+  newMessages = new Subject<string>()
   usersAndRoomsData = new Subject<{
     usersData : UserDataType
     roomsData : RoomDataType
@@ -58,17 +58,14 @@ export class ChatService {
         this.emitUserExit()
       })
     });
+
+    this.socket.on('new_message', (data: any) => {
+      this.newMessages.next(data)
+    })
   }
 
   sendMessage(body: any) {
     this.socket.emit('send_message', body)
-  }
-
-  startReceivingMessage() {
-    this.socket.on('new_message', (data: any) => {
-      this.newMessages.next(data)
-    })
-    return this.newMessages.asObservable()
   }
 
   disconnectUser() {

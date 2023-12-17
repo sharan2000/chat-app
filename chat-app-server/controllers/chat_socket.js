@@ -50,18 +50,18 @@ const initializeChatSocket = () => {
         // if the message is sent to a user then we do this
         if(messageData.selected_is_user) {
           chatNamespace.to(messageData.from).to(messageData.to).emit('new_message', {
-            name: messageData.from,
+            from: messageData.from,
+            to: messageData.to,
             message: messageData.message,
             time: currtime.toISOString(), // converting to ISO so that frontend can parse it to local time
-            message_window_name: messageData.to // identify the user or room that is select when sending this message
           })
         } else {
         // if a message is sent to a room we do this
           chatNamespace.to(messageData.to).emit('new_message', {
-            name: messageData.from,
+            from: messageData.from,
+            to: messageData.to,
             message: messageData.message,
             time: currtime.toISOString(), // converting to ISO so that frontend can parse it to local time
-            message_window_name: messageData.to // identify the user or room that is select when sending this message
           })
         }
       } catch(err) {

@@ -24,6 +24,7 @@ export class ChatComponent implements OnInit {
   selectedChat: any
   authLoggedInSubscription: Subscription|undefined
   chatSpinner = false
+  namesFilter = ''
 
   constructor(
     protected authService: AuthService,
@@ -57,7 +58,6 @@ export class ChatComponent implements OnInit {
       }
     })
 
-
     this.userStatusSubscription = this.chatService.userStatus.subscribe({
       next: (userStatus: any) => {
         this.usersDataObject[userStatus.username].connected = userStatus.connected
@@ -65,20 +65,25 @@ export class ChatComponent implements OnInit {
       }
     })
 
-
-    this.newMessagesSubscription = this.chatService.startReceivingMessage().subscribe({
+    this.newMessagesSubscription = this.chatService.newMessages.subscribe({
       next: (body: any) => {
+        // if the user did not select any chat we don't need to do the below process because there won't be any messages array for the user to see. 
+        if(!this.selectedChat) { return }
+
         console.log('new message -- ', body)
-        // user can receive different messages. but we should add a new message to array only if the message is coming in the current select chat of the user
-        if(body.message_window_name === this.selectedChat.name) {
-          this.messageArray.push(body)
+        // user can receive different messages(from different rooms and chats). but we should add a new message to array only if the message is coming in the current select chat of the user (ie., between current user and selected (user or room))
+        if(((body.from === this.selectedChat.name) && (body.to === this.authService.userData['username'])) || (body.from === this.authService.userData['username']) && (body.to === this.selectedChat.name)) {
+          this.messageArray.push({
+            name: body.from,
+            message: body.message,
+            time: body.time
+          })
         }
       }
     })
   }
 
   sendMessage() {
-    console.log('sending')
     this.chatService.sendMessage({
       from: this.authService.userData['username'],
       to: this.selectedChat.name,
@@ -91,7 +96,7 @@ export class ChatComponent implements OnInit {
   // when user chat is selected; i.e, one-on-one chat
   chatSelected(selecteItem: any) {
     this.chatSpinner = true
-    console.log('selected chat -- ', selecteItem)
+    console.log('selected chat --- ', selecteItem)
     this.selectedChat = {
       name: selecteItem.username,
       connected: selecteItem.connected,
@@ -106,6 +111,7 @@ export class ChatComponent implements OnInit {
         console.log(`chat between '${this.authService.userData.username}' and '${selecteItem.username}' -- `, response)
         this.messageArray = response.messages
         this.chatSpinner = false
+        this.scrollToBottomOfChat() // scroll to bottom of page
       },
       error: (errorResponse: any) => {
         this.chatSpinner = false
@@ -116,7 +122,7 @@ export class ChatComponent implements OnInit {
   // when any other chat is selected; i.e, NOT one-on-one chat (rooms, etc)
   chatRoomSelected(selecteItem: any) {
     this.chatSpinner = true
-    console.log('selected chat room -- ', selecteItem)
+    console.log('selected chat room --- ', selecteItem)
     this.selectedChat = {
       name: selecteItem.room_name
     }
@@ -128,6 +134,7 @@ export class ChatComponent implements OnInit {
         console.log(`chat for room '${this.selectedChat.name}' -- `, response)
         this.messageArray = response.messages
         this.chatSpinner = false
+        this.scrollToBottomOfChat() // scroll to bottom of page
       },
       error: (errorResponse: any) => {
         this.chatSpinner = false
@@ -135,8 +142,32 @@ export class ChatComponent implements OnInit {
     })
   }
 
+  scrollToBottomOfChat() {
+    setTimeout(() => {
+      window.scrollTo({
+        top: document.body.scrollHeight
+      });
+    }, 15)
+  }
+
+  scrollToTopOfChat() {
+    window.scrollTo({
+      top: 0
+    });
+  }
+
   removeExtraSpaces(event: any) {
     this.userEnteredMessage = this.userEnteredMessage.replace(/ {2,}/g, '')
+  }
+
+  filterNames() {
+    this.usersDataValues = Object.values(this.usersDataObject).filter((data:any) => {
+      return data.username.includes(this.namesFilter)
+    })
+
+    this.roomsDataValues = Object.values(this.roomsDataObject).filter((data:any) => {
+      return data.room_name.includes(this.namesFilter)
+    })
   }
 
   ngOnDestroy() {
