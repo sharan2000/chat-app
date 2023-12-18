@@ -1,135 +1,150 @@
-<div class="container">
-  <div class="row clearfix">
-    <div class="col-lg-12">
-      <div class="card chat-app">
-        <!-- *** users and rooms display side panel *** -->
-        <div id="plist" class="people-list">
-          <div class="input-group">
-            <!-- <div class="input-group-prepend">
-              <span class="input-group-text"><i class="fa fa-search"></i></span>
-            </div> -->
-            <input type="text" [(ngModel)]="namesFilter" class="form-control" placeholder="Search..." (keyup)="filterNames()">
-          </div>
-          <hr>
-          <!-- users data div below -->
-          <ul class="list-unstyled chat-list mt-2 mb-0">
-            <li class="clearfix">
-              <span class="badge bg-secondary list-type"> Users </span>
-            </li>
-            <ng-container *ngIf="usersDataValues?.length; else emptyStateEle">
-              <li *ngFor="let item of usersDataValues" class="clearfix" [ngClass]="{ active: (item.username === selectedChat?.name) }" (click)="chatSelected(item)">
-                <!-- <img src="https://bootdey.com/img/Content/avatar/avatar1.png" alt="avatar"> -->
-                <div class="about">
-                  <div class="name">{{ item.username }} {{ (item.username === authService.userData.username) ? " (yourself)" : "" }}</div>
-                  <div class="status"> <i class="icon" [ngClass]="{ connected: item.connected }"></i> {{item.connected ? 'online' : 'offline'}} </div>                                       
-                </div>
-              </li>
-            </ng-container>
-          </ul>
-          <hr>
-          <!-- rooms data div below -->
-          <ul class="list-unstyled chat-list mt-2 mb-0">
-            <li class="clearfix">
-              <span class="badge bg-secondary list-type"> Rooms </span>
-            </li>
-            <ng-container *ngIf="roomsDataValues?.length; else emptyStateEle">
-              <li *ngFor="let item of roomsDataValues" class="clearfix" [ngClass]="{ active: (item.room_name === selectedChat?.name) }" (click)="chatRoomSelected(item)">
-                <div class="about">
-                  <div class="name">{{ item.room_name }}</div>                                      
-                </div>
-              </li>
-            </ng-container>
-          </ul>
-          <!-- empty state div -->
-          <ng-template #emptyStateEle>
-            <li  class="clearfix">
-              <p class="alert alert-warning p-1" style="font-size: 0.75rem;"> No data found </p>
-            </li>
-          </ng-template>
-        </div>
-
-        <!-- *** chat messages panel *** -->
-        <div class="chat">
-          <ng-container *ngIf="selectedChat">
-            <div class="chat-header clearfix">
-              <div class="row">
-                <div class="col-lg-6">
-                    <!-- <a href="javascript:void(0);" data-toggle="modal" data-target="#view_info">
-                      <img src="https://bootdey.com/img/Content/avatar/avatar2.png" alt="avatar">
-                    </a> -->
-                    <div class="chat-about">
-                      <h6 class="m-b-0">{{ selectedChat.name }}</h6>
-                      <div class="status" *ngIf="selectedChat.is_user"> <i class="icon" [ngClass]="{ connected: selectedChat.connected }"></i> {{ selectedChat.connected ? 'online' : 'offline' }}</div> 
-                    </div>
-                </div>
-                <!-- <div class="col-lg-6 hidden-sm text-right">
-                    <a href="javascript:void(0);" class="btn btn-outline-secondary"><i class="fa fa-camera"></i></a>
-                    <a href="javascript:void(0);" class="btn btn-outline-primary"><i class="fa fa-image"></i></a>
-                    <a href="javascript:void(0);" class="btn btn-outline-info"><i class="fa fa-cogs"></i></a>
-                    <a href="javascript:void(0);" class="btn btn-outline-warning"><i class="fa fa-question"></i></a>
-                </div> -->
-              </div>
-            </div>
-            <ng-container *ngIf="!chatSpinner">
-              <div class="chat-history">
-                <ul class="m-b-0" *ngIf="messageArray?.length">
-                  <li class="clearfix" *ngFor="let item of messageArray">
-                    <!-- my messages (here the css class name can be confusing we are using opposite classes to the name) -->
-                    <ng-container *ngIf="item.name == this.authService.userData['username']">
-                      <div class="message-data text-end">
-                        <span class="message-data-time">{{ item.time | date:'d/M/yy, h:mm a' }}</span>
-                        <!-- <img src="https://bootdey.com/img/Content/avatar/avatar7.png" alt="avatar"> -->
-                      </div>
-                      <div class="message other-message float-right">
-                        {{ item.message }}
-                      </div>
-                    </ng-container>
-
-                    <!-- others messages -->
-                    <ng-container *ngIf="item.name != this.authService.userData['username']">
-                      <div class="message-data">
-                        <span class="message-data-time">{{ item.time | date:'d/M/yy, h:mm a' }}</span>
-                      </div>
-                      <div class="message my-message">
-                        <!-- only in rooms we show usernames above messages -->
-                        <div *ngIf="!selectedChat.is_user" class="username-above-message">{{ '~ ' + item.name }}</div>
-                        {{ item.message }}
-                      </div>    
-                    </ng-container>
-                  </li>
-                </ul>
-                <div class="card m-1 text-center" *ngIf="messageArray.length < 1">
-                  <div class="card-body">
-                    <h5 class="card-title">No messages found. Send a message and start a conversation.</h5>
-                  </div>
-                </div>
-              </div>
-              <div class="chat-message clearfix">
-                <!-- <div class="input-group mb-0"> -->
-                  <!-- <div class="input-group-prepend">
-                    <span class="input-group-text"><i class="fa fa-send"></i></span>
-                  </div> -->
-                  <form class="form">
-                    <textarea [(ngModel)]="userEnteredMessage" #message="ngModel" name="userEnteredMessage" placeholder="Your message... (should contain less than or equal to 3000 characters)" class="input" required minLength="1" maxLength="1000" (keyup)="removeExtraSpaces($event)"></textarea>
-                    <button class="send-button ms-2 btn btn-sm btn-rounded btn-success" [disabled]="!message.valid" (click)="sendMessage()">Send</button>
-                    <button class="send-button ms-2 btn btn-sm btn-secondary" style="border-radius: 50%;" (click)="scrollToTopOfChat()">top</button>
-                  </form>
-                  <!-- <input type="text" class="form-control" placeholder="Enter text here...">                                     -->
-                <!-- </div> -->
-              </div>
-            </ng-container>
-
-            <div class="lds-facebook" *ngIf="chatSpinner"><div></div><div></div><div></div></div>
-          </ng-container>
-          <ng-container *ngIf="!selectedChat">
-            <div class="card m-1 text-center">
-              <div class="card-body">
-                <h5 class="card-title">Please select a chat or a room to see the messages.</h5>
-              </div>
-            </div>
-          </ng-container>
-        </div>
+<div class="d-flex" id="wrapper" [ngClass]="{'toggled':hideMenu}">
+  <!-- users and rooms side menu -->
+  <div class="bg-light border-right" id="sidebar-wrapper">
+    <div class="sidebar-heading">
+      <div class="input-group">
+        <!-- <div class="input-group-prepend">
+            <span class="input-group-text"><i class="fa fa-search"></i></span>
+          </div> -->
+        <input type="text" [(ngModel)]="namesFilter" class="form-control" placeholder="Search..."
+          (keyup)="filterNames()">
       </div>
     </div>
+    <div class="list-group list-group-flush users-rooms-div">
+      <!-- users data div below -->
+      <ul class="chat-list bg-light">
+        <li class="clearfix">
+          <span class="badge bg-secondary list-type"> Users </span>
+        </li>
+        <ng-container *ngIf="usersDataValues?.length; else emptyStateEle">
+          <li *ngFor="let item of usersDataValues" class="clearfix"
+            [ngClass]="{ active: (item.username === selectedChat?.name) }" (click)="chatSelected(item)">
+            <!-- <img src="https://bootdey.com/img/Content/avatar/avatar1.png" alt="avatar"> -->
+            <div class="about">
+              <div class="name">{{ item.username }} {{ (item.username === authService.userData.username) ? " (yourself)"
+                : "" }}</div>
+              <div class="status"> <i class="icon" [ngClass]="{ connected: item.connected }"></i> {{item.connected ?
+                'online' : 'offline'}} </div>
+            </div>
+          </li>
+        </ng-container>
+      </ul>
+      <!-- rooms data div below -->
+      <ul class="chat-list bg-light">
+        <li class="clearfix">
+          <span class="badge bg-secondary list-type"> Rooms </span>
+        </li>
+        <ng-container *ngIf="roomsDataValues?.length; else emptyStateEle">
+          <li *ngFor="let item of roomsDataValues" class="clearfix"
+            [ngClass]="{ active: (item.room_name === selectedChat?.name) }" (click)="chatRoomSelected(item)">
+            <div class="about">
+              <div class="name">{{ item.room_name }}</div>
+            </div>
+          </li>
+        </ng-container>
+      </ul>
+      <!-- empty state div -->
+      <ng-template #emptyStateEle>
+        <li class="clearfix">
+          <p class="alert alert-warning p-1" style="font-size: 0.75rem;"> No data found </p>
+        </li>
+      </ng-template>
+    </div>
   </div>
+  <!-- Complete chat panel below -->
+  <div id="page-content-wrapper">
+    <button class="btn btn-secondary btn-sm toggle-sidemenu-button" (click)="hideMenu = !hideMenu">&#8801;</button>
+    <!-- *** chat messages panel *** -->
+    <div>
+      <ng-container *ngIf="selectedChat">
+        <div class="chat-header clearfix">
+          <div class="row" style="align-items: center;">
+            <div class="col-10">
+              <!-- <a href="javascript:void(0);" data-toggle="modal" data-target="#view_info">
+                  <img src="https://bootdey.com/img/Content/avatar/avatar2.png" alt="avatar">
+                </a> -->
+              <div class="chat-about">
+                <h6 class="m-b-0">{{ selectedChat.name }}</h6>
+                <div class="status" *ngIf="selectedChat.is_user"> <i class="icon"
+                    [ngClass]="{ connected: selectedChat.connected }"></i> {{ selectedChat.connected ? 'online' :
+                  'offline' }}</div>
+              </div>
+            </div>
+            <!-- <div class="col-lg-6 hidden-sm text-right">
+                <a href="javascript:void(0);" class="btn btn-outline-secondary"><i class="fa fa-camera"></i></a>
+                <a href="javascript:void(0);" class="btn btn-outline-primary"><i class="fa fa-image"></i></a>
+                <a href="javascript:void(0);" class="btn btn-outline-info"><i class="fa fa-cogs"></i></a>
+                <a href="javascript:void(0);" class="btn btn-outline-warning"><i class="fa fa-question"></i></a>
+            </div> -->
+          </div>
+        </div>
+        <ng-container *ngIf="!chatSpinner">
+          <div class="chat-history">
+            <ul class="m-b-0" *ngIf="messageArray?.length">
+              <li class="clearfix" *ngFor="let item of messageArray">
+                <!-- my messages (here the css class name can be confusing we are using opposite classes to the name) -->
+                <ng-container *ngIf="item.name == this.authService.userData['username']">
+                  <div class="message-data text-end">
+                    <span class="message-data-time">{{ item.time | date:'d/M/yy, h:mm a' }}</span>
+                    <!-- <img src="https://bootdey.com/img/Content/avatar/avatar7.png" alt="avatar"> -->
+                  </div>
+                  <div class="message other-message float-right">
+                    {{ item.message }}
+                  </div>
+                </ng-container>
+
+                <!-- others messages -->
+                <ng-container *ngIf="item.name != this.authService.userData['username']">
+                  <div class="message-data">
+                    <span class="message-data-time">{{ item.time | date:'d/M/yy, h:mm a' }}</span>
+                  </div>
+                  <div class="message my-message">
+                    <!-- only in rooms we show usernames above messages -->
+                    <div *ngIf="!selectedChat.is_user" class="username-above-message">{{ '~ ' + item.name }}</div>
+                    {{ item.message }}
+                  </div>
+                </ng-container>
+              </li>
+            </ul>
+            <div class="card m-1 text-center" *ngIf="messageArray.length < 1">
+              <div class="card-body">
+                <h5 class="card-title">No messages found. Send a message and start a conversation.</h5>
+              </div>
+            </div>
+          </div>
+          <div class="chat-message clearfix">
+            <!-- <div class="input-group mb-0"> -->
+            <!-- <div class="input-group-prepend">
+                <span class="input-group-text"><i class="fa fa-send"></i></span>
+              </div> -->
+            <form class="form">
+              <textarea [(ngModel)]="userEnteredMessage" #message="ngModel" name="userEnteredMessage"
+                placeholder="Your message... (should contain less than or equal to 3000 characters)" class="input"
+                required minLength="1" maxLength="1000" (keyup)="removeExtraSpaces($event)"></textarea>
+              <button class="send-button ms-2 btn btn-sm btn-rounded btn-success" [disabled]="!message.valid"
+                (click)="sendMessage()">Send</button>
+              <button class="send-button ms-2 btn btn-sm btn-secondary" style="border-radius: 50%;"
+                (click)="scrollToTopOfChat()">top</button>
+            </form>
+            <!-- <input type="text" class="form-control" placeholder="Enter text here...">                                     -->
+            <!-- </div> -->
+          </div>
+        </ng-container>
+
+        <div class="lds-facebook" *ngIf="chatSpinner">
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+      </ng-container>
+      <ng-container *ngIf="!selectedChat">
+        <div class="card m-1 text-center">
+          <div class="card-body">
+            <h5 class="card-title">Please select a chat or a room to see the messages.</h5>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+  <!-- /#page-content-wrapper -->
 </div>

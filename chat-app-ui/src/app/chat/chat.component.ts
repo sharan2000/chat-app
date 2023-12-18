@@ -25,7 +25,8 @@ export class ChatComponent implements OnInit {
   authLoggedInSubscription: Subscription|undefined
   chatSpinner = false
   namesFilter = ''
-
+  hideMenu = false
+  
   constructor(
     protected authService: AuthService,
     private chatService: ChatService,
@@ -145,15 +146,16 @@ export class ChatComponent implements OnInit {
 
   scrollToBottomOfChat(smooth = false) {
     setTimeout(() => {
-      window.scrollTo({
-        top: document.body.scrollHeight,
+      const identifiedElement = document.getElementById('page-content-wrapper')
+      identifiedElement?.scrollTo({
+        top: identifiedElement?.scrollHeight,
         behavior: smooth ? "smooth" : 'instant' 
       });
     }, 15)
   }
 
   scrollToTopOfChat() {
-    window.scrollTo({
+    document.getElementById('page-content-wrapper')?.scrollTo({
       top: 0
     });
   }

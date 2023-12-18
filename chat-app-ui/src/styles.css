@@ -1,5 +1,6 @@
-body{
+body {
   background-color: #f4f7f6;
+  overflow-x: hidden;
 }
 
 .list-type {
@@ -37,128 +38,83 @@ a.white-text:hover {
   background-color: #86c541;
 }
 
-.card {
-  background: #fff;
-  transition: .5s;
-  border: 0;
-  margin-bottom: 30px;
-  border-radius: .55rem;
-  position: relative;
-  width: 100%;
-  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 10%);
-}
-.chat-app .people-list {
-  width: 280px;
-  position: absolute;
-  left: 0;
-  top: 0;
-  padding: 20px;
-  z-index: 7
+.chat-list {
+  padding: 0 0.5rem;
+  margin: 0
 }
 
-.chat-app .chat {
-  margin-left: 280px;
-  border-left: 1px solid #eaeaea
-}
-
-.people-list {
-  -moz-transition: .5s;
-  -o-transition: .5s;
-  -webkit-transition: .5s;
-  transition: .5s
-}
-
-.people-list .chat-list li {
+.chat-list li {
   padding: 10px 15px;
   list-style: none;
   border-radius: 3px
 }
 
-.people-list .chat-list li:hover {
+.chat-list li:hover {
   background: #efefef;
   cursor: pointer
 }
 
-.people-list .chat-list li.active {
-  background: #efefef
+.chat-list li.active {
+  background: #d7d7d7
 }
 
-.people-list .chat-list li .name {
+.chat-list li .name {
   font-size: 15px
 }
 
-.people-list .chat-list img {
+.chat-list img {
   width: 45px;
   border-radius: 50%
 }
 
-.people-list img {
-  float: left;
-  border-radius: 50%
-}
-
-.people-list .about {
-  float: left;
-  padding-left: 8px
-}
-
-.people-list .status {
-  color: #999;
-  font-size: 13px
-}
-
-.chat-about .status {
-  color: #999;
-  font-size: 13px
-}
-
-.chat .chat-header {
+.chat-header {
   padding: 15px 20px;
-  border-bottom: 2px solid #f4f7f6
+  border-bottom: 2px solid #e5e3e3
 }
 
-.chat .chat-header img {
+.chat-header img {
   float: left;
   border-radius: 40px;
   width: 40px
 }
 
-.chat .chat-header .chat-about {
+.chat-header .chat-about {
   float: left;
   padding-left: 10px
 }
 
-.chat .chat-history {
+
+.chat-history {
   padding: 20px;
-  border-bottom: 2px solid #fff
+  border-bottom: 2px solid #e5e3e3
 }
 
-.chat .chat-history ul {
+.chat-history ul {
   padding: 0
 }
 
-.chat .chat-history ul li {
+.chat-history ul li {
   list-style: none;
   margin-bottom: 0.75rem
 }
 
-.chat .chat-history ul li:last-child {
+.chat-history ul li:last-child {
   margin-bottom: 0px
 }
 
-.chat .chat-history .message-data img {
+.chat-history .message-data img {
   border-radius: 40px;
   width: 40px
 }
 
-.chat .chat-history .message-data-time {
+.chat-history .message-data-time {
   color: #434651;
   padding-left: 6px;
   font-size: 0.75rem;
   font-style: italic;
 }
 
-.chat .chat-history .message {
+.chat-history .message {
   color: #444;
   padding: 0.25rem 0.5rem;
   line-height: 26px;
@@ -168,7 +124,7 @@ a.white-text:hover {
   position: relative
 }
 
-/* .chat .chat-history .message:after {
+/* .chat-history .message:after {
   bottom: 100%;
   left: 7%;
   border: solid transparent;
@@ -182,11 +138,11 @@ a.white-text:hover {
   margin-left: -10px
 } */
 
-.chat .chat-history .my-message {
+.chat-history .my-message {
   background: #efefef
 }
 
-/* .chat .chat-history .my-message:after {
+/* .chat-history .my-message:after {
   bottom: 100%;
   left: 30px;
   border: solid transparent;
@@ -200,17 +156,17 @@ a.white-text:hover {
   margin-left: -10px
 } */
 
-.chat .chat-history .other-message {
+.chat-history .other-message {
   background: #e8f1f3;
   text-align: right
 }
 
-/* .chat .chat-history .other-message:after {
+/* .chat-history .other-message:after {
   border-bottom-color: #e8f1f3;
   left: 75%
 } */
 
-.chat .chat-message {
+.chat-message {
   padding: 20px
 }
 
@@ -247,54 +203,6 @@ a.white-text:hover {
   height: 0
 }
 
-
-
-@media only screen and (max-width: 767px) {
-  .chat-app .people-list {
-      height: 465px;
-      width: 100%;
-      overflow-x: auto;
-      background: #fff;
-      left: -400px;
-      display: none
-  }
-  .chat-app .people-list.open {
-      left: 0
-  }
-  .chat-app .chat {
-      margin: 0
-  }
-  .chat-app .chat .chat-header {
-      border-radius: 0.55rem 0.55rem 0 0
-  }
-  .chat-app .chat-history {
-      height: 300px;
-      overflow-x: auto
-  }
-}
-
-@media only screen and (min-width: 768px) and (max-width: 992px) {
-  .chat-app .chat-list {
-      height: 650px;
-      overflow-x: auto
-  }
-  .chat-app .chat-history {
-      height: 600px;
-      overflow-x: auto
-  }
-}
-
-@media only screen and (min-device-width: 768px) and (max-device-width: 1024px) and (orientation: landscape) and (-webkit-min-device-pixel-ratio: 1) {
-  .chat-app .chat-list {
-      height: 480px;
-      overflow-x: auto
-  }
-  .chat-app .chat-history {
-      height: calc(100vh - 350px);
-      overflow-x: auto
-  }
-}
-
 .input {
   width: 80%;
   resize: none;
@@ -308,40 +216,69 @@ a.white-text:hover {
   vertical-align: top;
 }
 
-/* spinner related css */
-.lds-facebook {
-  display: inline-block;
-  position: relative;
-  width: 80px;
-  height: 80px;
-}
-.lds-facebook div {
-  display: inline-block;
+.toggle-sidemenu-button {
   position: absolute;
-  left: 8px;
-  width: 16px;
-  background: #3f0e40;
-  animation: lds-facebook 1.2s cubic-bezier(0, 0.5, 0.5, 1) infinite;
+  font-size: 0.7rem;
+  margin: 0;
+  padding: 0 0.1rem;
+  margin-top: 2px;
+  z-index: 100;
 }
-.lds-facebook div:nth-child(1) {
-  left: 8px;
-  animation-delay: -0.24s;
+
+/* new styles */
+
+.users-rooms-div {
+  height: calc(100vh - 7rem) !important; /* 3.5 for top fixed nav bar and 3.5 for search bar */
+  overflow: auto;
 }
-.lds-facebook div:nth-child(2) {
-  left: 32px;
-  animation-delay: -0.12s;
+
+#wrapper {
+  margin-top: 3.5rem;
 }
-.lds-facebook div:nth-child(3) {
-  left: 56px;
-  animation-delay: 0;
+
+#sidebar-wrapper {
+  height: calc(100vh - 3.5rem) !important; /* 3.5 for top fixed nav bar */
+  max-height: calc(100vh - 3.5rem) !important; /* 3.5 for top fixed nav bar */
+  margin-left: -15rem;
+  -webkit-transition: margin .25s ease-out;
+  -moz-transition: margin .25s ease-out;
+  -o-transition: margin .25s ease-out;
+  transition: margin .25s ease-out;
 }
-@keyframes lds-facebook {
-  0% {
-    top: 8px;
-    height: 64px;
+
+#sidebar-wrapper .sidebar-heading {
+  padding: 0.5rem 0.5rem;
+  font-size: 1.2rem;
+  border-bottom: 1px solid #e5e3e3;
+}
+
+#sidebar-wrapper .list-group {
+  width: 15rem;
+}
+
+#page-content-wrapper {
+  height: calc(100vh - 3.5rem) !important; /* 3.5 for top fixed nav bar */
+  max-height: calc(100vh - 3.5rem) !important; /* 3.5 for top fixed nav bar */
+  min-width: 100vw;
+  overflow-y: auto;
+  border-left: 2px solid #e5e3e3;
+}
+
+#wrapper.toggled #sidebar-wrapper {
+  margin-left: 0;
+}
+
+@media (min-width: 768px) {
+  #sidebar-wrapper {
+    margin-left: 0;
   }
-  50%, 100% {
-    top: 24px;
-    height: 32px;
+
+  #page-content-wrapper {
+    min-width: 0;
+    width: 100%;
+  }
+
+  #wrapper.toggled #sidebar-wrapper {
+    margin-left: -15rem;
   }
 }
