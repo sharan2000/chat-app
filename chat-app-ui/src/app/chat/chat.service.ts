@@ -15,6 +15,7 @@ export class ChatService {
     roomsData : RoomDataType
   }>()
   userStatus = new Subject<any>()
+  roomsData = new Subject<any>()
   socket: any
 
   constructor(
@@ -51,6 +52,11 @@ export class ChatService {
       this.userStatus.next(userStatus)
     });
 
+    this.socket.on("new_room_added", (roomData: any) => {
+      this.roomsData.next(roomData)
+      this.socket.emit('join_new_room', roomData.room_name)
+    });
+
     this.socket.on("connected_to_session", (session_token: any) => {
       sessionStorage.setItem('session_token', session_token)
 
@@ -66,6 +72,10 @@ export class ChatService {
 
   sendMessage(body: any) {
     this.socket.emit('send_message', body)
+  }
+
+  emitNewRoomDetails(roomname: string) {
+    this.socket.emit('emit_new_room_details', roomname)
   }
 
   disconnectUser() {

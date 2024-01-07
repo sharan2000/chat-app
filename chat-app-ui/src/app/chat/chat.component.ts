@@ -16,6 +16,7 @@ export class ChatComponent implements OnInit {
   newMessagesSubscription: Subscription | undefined
   usersAndRoomsSubscription: Subscription | undefined
   userStatusSubscription: Subscription | undefined
+  roomsDataSubscription : Subscription | undefined
   messageArray: any[] = []
   usersDataObject: any
   usersDataValues: any
@@ -26,6 +27,11 @@ export class ChatComponent implements OnInit {
   chatSpinner = false
   namesFilter = ''
   hideMenu = false
+  showAddModal = false
+  enteredRoomName = ''
+  spinner = false
+  errorResponse: any
+  modalViewNumber = 1
   
   constructor(
     protected authService: AuthService,
@@ -62,7 +68,17 @@ export class ChatComponent implements OnInit {
     this.userStatusSubscription = this.chatService.userStatus.subscribe({
       next: (userStatus: any) => {
         this.usersDataObject[userStatus.username].connected = userStatus.connected
+        if(this.selectedChat?.connected != undefined && this.selectedChat?.name === userStatus.username) {
+          this.selectedChat.connected = userStatus.connected
+        }
         console.log('in subscription of user status --', userStatus)
+      }
+    })
+
+    this.roomsDataSubscription = this.chatService.roomsData.subscribe({
+      next: (data: any) => {
+        this.roomsDataObject[data.room_name] = data
+        this.roomsDataValues.push(data)
       }
     })
 
@@ -73,7 +89,7 @@ export class ChatComponent implements OnInit {
 
         console.log('new message -- ', body)
         // user can receive different messages(from different rooms and chats). but we should add a new message to array only if the message is coming in the current select chat of the user (ie., between current user and selected (user or room))
-        if(((body.from === this.selectedChat.name) && (body.to === this.authService.userData['username'])) || (body.from === this.authService.userData['username']) && (body.to === this.selectedChat.name)) {
+        if((body.is_room && body.to === this.selectedChat.name) || (!body.is_room && (((body.from === this.selectedChat.name) && (body.to === this.authService.userData['username'])) || (body.from === this.authService.userData['username']) && (body.to === this.selectedChat.name)))) {
           this.messageArray.push({
             name: body.from,
             message: body.message,
@@ -160,8 +176,15 @@ export class ChatComponent implements OnInit {
     });
   }
 
-  removeExtraSpaces(event: any) {
-    this.userEnteredMessage = this.userEnteredMessage.replace(/ {2,}/g, '')
+  removeExtraSpaces(variable: string) {
+    switch(variable) {
+      case 'userEnteredMessage' :
+        this.userEnteredMessage = this.userEnteredMessage.replace(/ {2,}/g, '')
+        break
+      case 'enteredRoomName' :
+        this.enteredRoomName = this.enteredRoomName.replace(/ {2,}/g, '')
+        break
+    }
   }
 
   filterNames() {
@@ -174,11 +197,41 @@ export class ChatComponent implements OnInit {
     })
   }
 
+  onAddRoom() {
+    this.spinner = true
+    console.log(this.enteredRoomName)
+    this.apiService.callApi('add_new_chat_room', 'POST', { enteredRoomName : this.enteredRoomName }).subscribe({
+      next: (response: any) => {
+        this.spinner = false
+        if(response.success) {
+          this.chatService.emitNewRoomDetails(this.enteredRoomName)
+          this.modalViewNumber = 2
+        } else {
+          this.errorResponse = response.error
+        }
+      },
+      error: (errorResponse: any) => {
+        this.spinner = false
+        this.errorResponse = {
+          roomname: 'Network error. Please try again.'
+        }
+      }
+    })
+  }
+
+  openRoomModal() {
+    this.showAddModal = true
+    this.enteredRoomName = ''
+    this.errorResponse = null
+    this.modalViewNumber = 1
+  }
+
   ngOnDestroy() {
     this.newMessagesSubscription?.unsubscribe()
     this.usersAndRoomsSubscription?.unsubscribe()
     this.authLoggedInSubscription?.unsubscribe()
     this.userStatusSubscription?.unsubscribe()
+    this.roomsDataSubscription?.unsubscribe()
     this.chatService.disconnectUser()
   }
 

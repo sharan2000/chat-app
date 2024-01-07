@@ -1,15 +1,15 @@
 const Users = require("../models/users")
 const Messages = require("../models/messages")
+const Rooms = require("../models/rooms")
 const { getSessionStoreObject } = require('../knexConnection')
 const { raw } = require("objection")
 
 /*
-  - generally we should get this romm names from the database.
+  - generally we should get this room names from the database.
   - in the database the user with admin status will add rooms.
   - whenever a new user logs in we send him the users list along with the rooms list
   - for now we just use this const array. Adding admin panel and giving option to add rooms is a enhancement
 */
-const ROOMS = ['room1', 'room2', 'room3']
 
 const getUsersForChatWithStatus = async () => {
   let users = [], store_users = []
@@ -41,15 +41,20 @@ const getUsersForChatWithStatus = async () => {
   return userDetailsAndRoomsObject
 }
 
-const getRoomsData = () => {
-  // normally we should write a query to get rooms data from the DB. For now we use the const array
+const getRoomsData = async () => {
   const data = {}
-  ROOMS.forEach(name => {
-    data[name] = {
-      room_name: name,
-      // we can add any additional information in future
-    }
-  })
+  try {
+    let roomsData = await Rooms.query().select('roomname').orderBy('roomname')
+    console.log('rooms data -- ', roomsData)
+    roomsData.forEach(room => {
+      data[room.roomname] = {
+        room_name: room.roomname,
+        // we can add any additional information in future
+      }
+    })
+  } catch(err) {
+    console.log("error in getRoomsData -- ", err)
+  }
   return data
 }
 
@@ -140,10 +145,56 @@ const getChatForRoom = async (req, res, next) => {
   })
 }
 
+const addNewChatRoom = async (req, res, next) => {
+  console.log("entered into api : /add_new_chat_room");
+  let success, status, error
+  try {
+    const payload = req.body
+    console.log('payload -- ', payload)
+    const { enteredRoomName } = payload
+    let sameNameData = await Rooms.query().select('roomname').where('roomname', enteredRoomName)
+    if(sameNameData.length) {
+      throw new Error('Same room name exists. Please use another room name.')
+    }
+
+    await Rooms.query().insert({
+      roomname: enteredRoomName
+    })
+
+    success = true
+    status = 200
+  } catch(err) {
+    error = 'Same room exists. Try another name.'
+    success = false
+    status = 200
+    console.log('error in get messages -- ', err)
+  }
+  res.status(status).json({
+    success,
+    error: {
+      roomname: error
+    }
+  })
+}
+
+const getChatRoomDetails = async (roomname) => {
+  /* 
+    - async has no effect here. after adding db call in the future it will be used.
+    - here we will get all the details of the room by querying the database with the given roomname.
+    - For now we just return a simple roomobject
+    - data to send about new room. this is in the same format as we send the usersandrooms data at the start
+  */
+  return {
+    room_name: roomname
+  }
+}
+
 module.exports = {
   getUsersForChatWithStatus,
   getChat,
   addNewMessage,
   getRoomsData,
-  getChatForRoom
+  getChatForRoom,
+  addNewChatRoom,
+  getChatRoomDetails
 }

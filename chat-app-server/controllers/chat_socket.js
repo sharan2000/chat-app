@@ -5,11 +5,13 @@ const { auth_socket_middleware } = require('../middleware/auth');
 const { getSocketIO } = require('../socket')
 const { getSessionStoreObject } = require('../knexConnection')
 
-const { getUsersForChatWithStatus, addNewMessage, getRoomsData } = require("./chat")
+const { getUsersForChatWithStatus, addNewMessage, getRoomsData, getChatRoomDetails } = require("./chat")
+
+let socketIO, chatNamespace
 
 const initializeChatSocket = () => {
-  const socketIO = getSocketIO()
-  const chatNamespace = socketIO.of("/chat");
+  socketIO = getSocketIO()
+  chatNamespace = socketIO.of("/chat");
 
   // middleware to check the authorization whena new socket is connect to this namespace
   chatNamespace.use(auth_socket_middleware);
@@ -23,7 +25,7 @@ const initializeChatSocket = () => {
       socket.session_force_expired = false
 
       const usersData = await getUsersForChatWithStatus()
-      const roomsData = getRoomsData()
+      const roomsData = await getRoomsData()
       // we should add our user to all the rooms
       Object.keys(roomsData).forEach((room_name) => {
         socket.join(room_name);
@@ -54,6 +56,7 @@ const initializeChatSocket = () => {
             to: messageData.to,
             message: messageData.message,
             time: currtime.toISOString(), // converting to ISO so that frontend can parse it to local time
+            is_room: false
           })
         } else {
         // if a message is sent to a room we do this
@@ -62,6 +65,7 @@ const initializeChatSocket = () => {
             to: messageData.to,
             message: messageData.message,
             time: currtime.toISOString(), // converting to ISO so that frontend can parse it to local time
+            is_room: true
           })
         }
       } catch(err) {
@@ -82,6 +86,15 @@ const initializeChatSocket = () => {
         socket.session_force_expired = false
         console.log(err)}
       )
+    })
+
+    socket.on('emit_new_room_details', async (roomname) => {
+      let roomDetails = await getChatRoomDetails(roomname)
+      chatNamespace.emit('new_room_added', roomDetails)
+    })
+
+    socket.on('join_new_room', async (roomname) => {
+      socket.join(roomname);
     })
 
     socket.on("disconnecting", async () => {
