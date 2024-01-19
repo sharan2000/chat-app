@@ -11,6 +11,38 @@ const { raw } = require("objection")
   - for now we just use this const array. Adding admin panel and giving option to add rooms is a enhancement
 */
 
+const getUsersAndRoomsData = async (req, res) => {
+  console.log("entered into api : /get_users_and_rooms_data");
+  let messages, success, status, error, data = {
+    usersData: {},
+    roomsData: {}
+  }
+  try {
+    const payload = req.body
+    const { email } = payload
+    console.log('payload -- ', payload)
+
+    data.roomsData = await getRoomsData()
+    data.usersData = await getUsersForChatWithStatus()
+
+    // get data here
+    success = true
+    status = 200
+  } catch(err) {
+    messages = []
+    success = false
+    status = 200
+    error = 'Error when getting friends and rooms data'
+    console.log('error in getUsersAndRoomsData -- ', err)
+  }
+  res.status(status).json({
+    data,
+    messages,
+    success,
+    error
+  })
+}
+
 const getUsersForChatWithStatus = async () => {
   let users = [], store_users = []
   try {
@@ -29,6 +61,8 @@ const getUsersForChatWithStatus = async () => {
       connected: false
     }
   })
+
+  console.log('half filled -- ', userDetailsAndRoomsObject)
 
   store_users.forEach(store_user => {
     userDetailsAndRoomsObject[store_user.user_data.username] = {
@@ -54,6 +88,19 @@ const getRoomsData = async () => {
     })
   } catch(err) {
     console.log("error in getRoomsData -- ", err)
+  }
+  return data
+}
+
+const getRoomsForUser = async () => {
+  const data = []
+  try {
+    let roomsData = await Rooms.query().select('roomname')
+    roomsData.forEach(rmdata => {
+      data.push(rmdata.roomname)
+    })
+  } catch(err) {
+    console.log("error in getRoomsForUser -- ", err)
   }
   return data
 }
@@ -190,6 +237,8 @@ const getChatRoomDetails = async (roomname) => {
 }
 
 module.exports = {
+  getUsersAndRoomsData,
+  getRoomsForUser,
   getUsersForChatWithStatus,
   getChat,
   addNewMessage,

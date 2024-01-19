@@ -1,19 +1,15 @@
-import { Injectable } from '@angular/core'
+import { Injectable, OnDestroy } from '@angular/core'
 import { Subject } from 'rxjs'
 import { io } from 'socket.io-client'
 import { Router } from '@angular/router'
 import { UserDataType, RoomDataType } from '../utils/data-types'
 
 @Injectable()
-export class ChatService {
+export class ChatService implements OnDestroy {
   SERVER_PORT = 1111
   CHAT_NAMESPACE = "/chat"
   SERVER_ADDRESS = 'http://127.0.0.1:' + this.SERVER_PORT + this.CHAT_NAMESPACE
   newMessages = new Subject<string>()
-  usersAndRoomsData = new Subject<{
-    usersData : UserDataType
-    roomsData : RoomDataType
-  }>()
   userStatus = new Subject<any>()
   roomsData = new Subject<any>()
   socket: any
@@ -39,13 +35,6 @@ export class ChatService {
       // user not authenticated so loggin out
       console.log('Error in authentication of socket -- ', err.message);
       // this.router.navigate(['/auth'], { queryParams: {type: 'login'} })
-    });
-
-    this.socket.on("users_and_rooms_data", (data: {
-      usersData : UserDataType
-      roomsData : RoomDataType
-    }) => {
-      this.usersAndRoomsData.next(data)
     });
 
     this.socket.on("user_connection_status", (userStatus: any) => {
@@ -78,11 +67,12 @@ export class ChatService {
     this.socket.emit('emit_new_room_details', roomname)
   }
 
-  disconnectUser() {
-    this.socket.disconnect()
-  }
-
   emitUserExit() {
     this.socket.emit('user_exit', true)
+  }
+
+  ngOnDestroy() {
+    this.emitUserExit() // to delete the user session session
+    this.socket.disconnect() // to disconnect the socket
   }
 }

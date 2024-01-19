@@ -4,17 +4,16 @@ import { Subscription } from "rxjs";
 import { AuthService } from "../auth/auth.service";
 import { ApiService } from "../api.service";
 import { UserDataType, RoomDataType } from '../utils/data-types'
+import { ActivatedRoute } from "@angular/router";
 
 @Component({
     selector: 'app-chat',
     templateUrl: './chat.component.html',
-    providers: [ChatService]
 })
 export class ChatComponent implements OnInit {
   userEnteredMessage: string = ''
   message: string = 'this is chat screen'
   newMessagesSubscription: Subscription | undefined
-  usersAndRoomsSubscription: Subscription | undefined
   userStatusSubscription: Subscription | undefined
   roomsDataSubscription : Subscription | undefined
   messageArray: any[] = []
@@ -23,45 +22,40 @@ export class ChatComponent implements OnInit {
   roomsDataObject: any
   roomsDataValues: any
   selectedChat: any
-  authLoggedInSubscription: Subscription|undefined
   chatSpinner = false
   namesFilter = ''
   hideMenu = false
   showAddModal = false
   enteredRoomName = ''
-  spinner = false
+  spinner = false // add room functionality will be romve for the user
   errorResponse: any
   modalViewNumber = 1
+  ufspinner = false
   
   constructor(
     protected authService: AuthService,
     private chatService: ChatService,
-    private apiService: ApiService
+    private apiService: ApiService,
   ) {}
 
   ngOnInit() {
-// new user is being connected
-    this.chatService.initializeChatSocket()
+    this.ufspinner = true
+    this.apiService.callApi('get_users_and_rooms_data', 'POST', {
+      email: this.authService.userData.email
+    }).subscribe({
+      next: (response: any) => {
+        if(response.success) {
+          console.log('data for user rooms and friends is => ', response)
+          this.usersDataObject = response.data['usersData']
+          this.usersDataValues = Object.values(this.usersDataObject)
 
-    this.authLoggedInSubscription = this.authService.authLoggedIn.subscribe({
-      next: (isLoggedIn: boolean) => {
-        if(!isLoggedIn) {
-          this.chatService.emitUserExit()
+          this.roomsDataObject = response.data['roomsData']
+          this.roomsDataValues = Object.values(this.roomsDataObject)
         }
-      }
-    })
-
-    this.usersAndRoomsSubscription = this.chatService.usersAndRoomsData.subscribe({
-      next: (data: {
-        usersData : UserDataType
-        roomsData : RoomDataType
-      }) => {
-        this.usersDataObject = data['usersData']
-        this.usersDataValues = Object.values(this.usersDataObject)
-
-        this.roomsDataObject = data['roomsData']
-        this.roomsDataValues = Object.values(this.roomsDataObject)
-        console.log('in subscription of users and rooms data --', data)
+        this.ufspinner = false
+      },
+      error: (errorResponse: any) => {
+        this.ufspinner = false
       }
     })
 
@@ -228,11 +222,8 @@ export class ChatComponent implements OnInit {
 
   ngOnDestroy() {
     this.newMessagesSubscription?.unsubscribe()
-    this.usersAndRoomsSubscription?.unsubscribe()
-    this.authLoggedInSubscription?.unsubscribe()
     this.userStatusSubscription?.unsubscribe()
     this.roomsDataSubscription?.unsubscribe()
-    this.chatService.disconnectUser()
   }
 
 }

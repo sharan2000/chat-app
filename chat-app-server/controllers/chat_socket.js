@@ -5,7 +5,7 @@ const { auth_socket_middleware } = require('../middleware/auth');
 const { getSocketIO } = require('../socket')
 const { getSessionStoreObject } = require('../knexConnection')
 
-const { getUsersForChatWithStatus, addNewMessage, getRoomsData, getChatRoomDetails } = require("./chat")
+const { getFriendsForUser, getRoomsForUser, addNewMessage, getChatRoomDetails } = require("./chat")
 
 let socketIO, chatNamespace
 
@@ -24,21 +24,18 @@ const initializeChatSocket = () => {
       socket.session_id = await identify_and_set_session(socket, user_session_token)
       socket.session_force_expired = false
 
-      const usersData = await getUsersForChatWithStatus()
-      const roomsData = await getRoomsData()
+      const roomsData = await getRoomsForUser()
+
       // we should add our user to all the rooms
-      Object.keys(roomsData).forEach((room_name) => {
+      roomsData.forEach((room_name) => {
         socket.join(room_name);
       })
-      socket.emit('users_and_rooms_data', {
-        usersData,
-        roomsData
-      })
+
       socket.broadcast.emit('user_connection_status', {
         username: socket.username,
         connected: true
       })
-      // for single one to one commmunication we create a room with the username
+      // for single one to one communication we create a room with the username
       socket.join(socket.username);
     })
 
@@ -98,7 +95,7 @@ const initializeChatSocket = () => {
     })
 
     socket.on("disconnecting", async () => {
-      // change status only if user is disconnected. If the user exits the app we already delete the session in 'user_exit' event
+      // change status only if user is disconnected (his internet is down or went offline). If the user exits the app we already delete the session in 'user_exit' event
       if(!socket.session_force_expired) {
         const identified_session = await getSession(socket.session_id).catch((err) => { console.log(err) })
         identified_session.user_data.connected = false

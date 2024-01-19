@@ -11,45 +11,52 @@
       </div>
     </div>
     <div class="list-group list-group-flush users-rooms-div">
-      <!-- users data div below -->
-      <ul class="chat-list bg-light">
-        <li class="clearfix">
-          <span class="badge bg-secondary list-type"> Users </span>
-        </li>
-        <ng-container *ngIf="usersDataValues?.length; else emptyStateEle">
-          <li *ngFor="let item of usersDataValues" class="clearfix"
-            [ngClass]="{ active: (item.username === selectedChat?.name) }" (click)="chatSelected(item)">
-            <!-- <img src="https://bootdey.com/img/Content/avatar/avatar1.png" alt="avatar"> -->
-            <div class="about">
-              <div class="name">{{ item.username }} {{ (item.username === authService.userData.username) ? " (yourself)"
-                : "" }}</div>
-              <div class="status"> <i class="icon" [ngClass]="{ connected: item.connected }"></i> {{item.connected ?
-                'online' : 'offline'}} </div>
-            </div>
+      <ng-container *ngIf="!ufspinner">
+        <!-- users data div below -->
+        <ul class="chat-list bg-light">
+          <li class="clearfix">
+            <span class="badge bg-secondary list-type"> Users </span>
           </li>
-        </ng-container>
-      </ul>
-      <!-- rooms data div below -->
-      <ul class="chat-list bg-light">
-        <li class="clearfix">
-          <span class="badge bg-secondary list-type"> Rooms </span>
-          <button class="btn btn-sm btn-success addButton" (click)="openRoomModal()"> + </button>
-        </li>
-        <ng-container *ngIf="roomsDataValues?.length; else emptyStateEle">
-          <li *ngFor="let item of roomsDataValues" class="clearfix"
-            [ngClass]="{ active: (item.room_name === selectedChat?.name) }" (click)="chatRoomSelected(item)">
-            <div class="about">
-              <div class="name">{{ item.room_name }}</div>
-            </div>
+          <ng-container *ngIf="usersDataValues?.length; else emptyStateEle">
+            <li *ngFor="let item of usersDataValues" class="clearfix"
+              [ngClass]="{ active: (item.username === selectedChat?.name) }" (click)="chatSelected(item)">
+              <!-- <img src="https://bootdey.com/img/Content/avatar/avatar1.png" alt="avatar"> -->
+              <div class="about">
+                <div class="name">{{ item.username }} {{ (item.username === authService.userData.username) ? " (yourself)"
+                  : "" }}</div>
+                <div class="status"> <i class="icon" [ngClass]="{ connected: item.connected }"></i> {{item.connected ?
+                  'online' : 'offline'}} </div>
+              </div>
+            </li>
+          </ng-container>
+        </ul>
+        <!-- rooms data div below -->
+        <ul class="chat-list bg-light">
+          <li class="clearfix">
+            <span class="badge bg-secondary list-type"> Rooms </span>
+            <button class="btn btn-sm btn-success addButton" (click)="openRoomModal()"> + </button>
           </li>
-        </ng-container>
-      </ul>
-      <!-- empty state div -->
-      <ng-template #emptyStateEle>
-        <li class="clearfix">
-          <p class="alert alert-warning p-1" style="font-size: 0.75rem;"> No data found </p>
-        </li>
-      </ng-template>
+          <ng-container *ngIf="roomsDataValues?.length; else emptyStateEle">
+            <li *ngFor="let item of roomsDataValues" class="clearfix"
+              [ngClass]="{ active: (item.room_name === selectedChat?.name) }" (click)="chatRoomSelected(item)">
+              <div class="about">
+                <div class="name">{{ item.room_name }}</div>
+              </div>
+            </li>
+          </ng-container>
+        </ul>
+        <!-- empty state div -->
+        <ng-template #emptyStateEle>
+          <li class="clearfix">
+            <p class="alert alert-warning p-1" style="font-size: 0.75rem;"> No data found </p>
+          </li>
+        </ng-template>
+      </ng-container>
+      <div class="lds-facebook" *ngIf="ufspinner">
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
     </div>
   </div>
   <!-- Complete chat panel below -->
