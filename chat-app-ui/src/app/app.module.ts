@@ -11,6 +11,7 @@ import { AuthInterceptor } from './auth/auth.interceptor';
 import { ChatComponent } from './chat/chat.component';
 import { ShortUsernamePipe } from './utils/short-username.pipe';
 import { RootComponent } from './root.component';
+import { RequestsComponent } from './requests/requests.component';
 
 @NgModule({
   declarations: [
@@ -19,6 +20,7 @@ import { RootComponent } from './root.component';
     DashboardComponent,
     AuthComponent,
     ChatComponent,
+    RequestsComponent,
     ShortUsernamePipe
   ],
   imports: [

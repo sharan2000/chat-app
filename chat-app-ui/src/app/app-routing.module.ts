@@ -7,6 +7,7 @@ import { ChatComponent } from './chat/chat.component';
 import { AuthComponent } from './auth/auth.component';
 import { AuthGuardFunction } from './auth/auth.guard';
 import { RootComponent } from './root.component';
+import { RequestsComponent } from './requests/requests.component';
 
 const routes: Routes = [
   {
@@ -21,6 +22,10 @@ const routes: Routes = [
       {
         path: 'chat',
         component: ChatComponent,
+      },
+      {
+        path: 'requests',
+        component: RequestsComponent,
       },
     ],
   },
