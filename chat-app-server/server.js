@@ -6,6 +6,8 @@ const session = require('express-session')
 const knexConnection = require("./knexConnection.js")
 const { chat_router } = require('./routes/chat.js')
 const { auth_router } = require('./routes/auth.js')
+const { requests_router } = require('./routes/requests.js')
+const { explore_router } = require('./routes/explore.js')
 const { auth_middleware } = require('./middleware/auth.js')
 const socketFile = require('./socket')
 const chat_socket = require('./controllers/chat_socket.js')
@@ -53,7 +55,7 @@ app.get('/dashboard_data', auth_middleware, (req, res, next) => {
     message: 'This is the dashboard.'
   })
 })
-app.use([auth_router, chat_router])
+app.use([auth_router, chat_router, requests_router, explore_router])
 
 server.listen(process.env.SERVER_PORT)
 let socket_server_started = socketFile.initSocketServer(server)

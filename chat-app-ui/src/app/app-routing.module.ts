@@ -8,6 +8,7 @@ import { AuthComponent } from './auth/auth.component';
 import { AuthGuardFunction } from './auth/auth.guard';
 import { RootComponent } from './root.component';
 import { RequestsComponent } from './requests/requests.component';
+import { ExploreComponent } from './explore/explore.component';
 
 const routes: Routes = [
   {
@@ -26,6 +27,10 @@ const routes: Routes = [
       {
         path: 'requests',
         component: RequestsComponent,
+      },
+      {
+        path: 'explore',
+        component: ExploreComponent,
       },
     ],
   },

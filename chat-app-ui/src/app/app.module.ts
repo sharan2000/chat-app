@@ -12,6 +12,7 @@ import { ChatComponent } from './chat/chat.component';
 import { ShortUsernamePipe } from './utils/short-username.pipe';
 import { RootComponent } from './root.component';
 import { RequestsComponent } from './requests/requests.component';
+import { ExploreComponent } from './explore/explore.component';
 
 @NgModule({
   declarations: [
@@ -21,6 +22,7 @@ import { RequestsComponent } from './requests/requests.component';
     AuthComponent,
     ChatComponent,
     RequestsComponent,
+    ExploreComponent,
     ShortUsernamePipe
   ],
   imports: [

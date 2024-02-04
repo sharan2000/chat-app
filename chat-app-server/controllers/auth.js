@@ -13,7 +13,7 @@ const login = async (req, res) => {
     const { email, password } = payload 
 
     // check if details
-    const user_data = await Users.query().select('email', 'password', 'username').where('email', email)
+    const user_data = await Users.query().select('id', 'email', 'password', 'username').where('email', email)
     if(user_data.length === 0) {
       errors['email'] = true
     }
@@ -44,6 +44,7 @@ const login = async (req, res) => {
     res.status(200).json({
       token,
       user_data: {
+        id: user_data[0].id,
         email: user_data[0].email,
         username: user_data[0].username
       },

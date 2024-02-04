@@ -11,7 +11,8 @@ export class AuthService {
   isAuthenticated: boolean = false
   userData = {
     email: '',
-    username: ''
+    username: '',
+    id: ''
   }
 
   constructor(

@@ -371,3 +371,31 @@ a.white-text:hover {
     transform: rotate(360deg);
   }
 }
+
+
+
+/* requests styles */
+#requests-div {
+  height: calc(100vh - 3.5rem) !important; /* 3.5 for top fixed nav bar */
+  max-height: calc(100vh - 3.5rem) !important; /* 3.5 for top fixed nav bar */
+}
+
+#requests-div > .col {
+  height: 100%;
+}
+
+#requests-div > .col > ul {
+  height: 100%;
+  overflow: auto;
+}
+
+.request-buttons {
+  display: inline;
+  float: right;
+}
+
+.request-buttons > button {
+  font-size: 1rem;
+  padding: 0px 5px;
+  margin-left: 3px;
+}

@@ -2,7 +2,6 @@ import { Injectable, OnDestroy } from '@angular/core'
 import { Subject } from 'rxjs'
 import { io } from 'socket.io-client'
 import { Router } from '@angular/router'
-import { UserDataType, RoomDataType } from '../utils/data-types'
 
 @Injectable()
 export class ChatService implements OnDestroy {

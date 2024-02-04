@@ -22,8 +22,11 @@ const getUsersAndRoomsData = async (req, res) => {
     const { email } = payload
     console.log('payload -- ', payload)
 
-    data.roomsData = await getRoomsData()
-    data.usersData = await getUsersForChatWithStatus()
+    const promiseArr = []
+    promiseArr.push(getRoomsData())
+    promiseArr.push(getUsersForChatWithStatus())
+
+    ;[data.roomsData, data.usersData] = await Promise.all(promiseArr) 
 
     // get data here
     success = true
@@ -46,11 +49,12 @@ const getUsersAndRoomsData = async (req, res) => {
 const getUsersForChatWithStatus = async () => {
   let users = [], store_users = []
   try {
-    users = await Users.query().select('username').orderBy('username')
-    store_users = await getAllSessions()
+    let promiseArr = []
+    promiseArr.push(Users.query().select('username').orderBy('username'))
+    promiseArr.push(getAllSessions())
 
-    console.log('users -- ', users),
-    console.log('store users -- ', store_users)
+    ;[users, store_users] = await Promise.all(promiseArr)
+
   } catch(err) {
     console.log("error in getUsersForChatWithStatus -- ", err)
   }
@@ -61,8 +65,6 @@ const getUsersForChatWithStatus = async () => {
       connected: false
     }
   })
-
-  console.log('half filled -- ', userDetailsAndRoomsObject)
 
   store_users.forEach(store_user => {
     userDetailsAndRoomsObject[store_user.user_data.username] = {
@@ -79,7 +81,6 @@ const getRoomsData = async () => {
   const data = {}
   try {
     let roomsData = await Rooms.query().select('roomname').orderBy('roomname')
-    console.log('rooms data -- ', roomsData)
     roomsData.forEach(room => {
       data[room.roomname] = {
         room_name: room.roomname,
