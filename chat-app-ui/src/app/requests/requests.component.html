@@ -1,10 +1,39 @@
-<div class="row" id="requests-div">
-  <div class="col">
-    <ul class="chat-list bg-light">
-      <li><span class="badge bg-secondary list-type"> Requests </span></li>
-      <li *ngFor="let item of temprequests">
-        {{item}}
-      </li>
-    </ul>
+<div id='requests'>
+  <div class="row notification-container">
+    <h2 class="text-center" id="header">My Requests</h2>
+    <ng-container *ngIf="!spinner">
+      <div class="card notification-card" *ngFor="let item of requests">
+        <div class="card-body">
+          <table>
+            <tr>
+              <td style="width:70%">
+                <div class="card-title" *ngIf="item.type === 'sent'">You sent a friend request to <b>{{ item.username }}</b>.</div>
+                <div class="card-title" *ngIf="item.type === 'received'"><b>{{ item.username }}</b> sent a friend request to you.</div>
+                <div style="font-size: 0.75rem"><em><span class="message-data-time">{{ item.sent_at | date:'d/M/yy, h:mm a' }}</span></em></div>
+              </td>
+              <td style="width:30%">
+                <ng-container *ngIf="item.type === 'sent'">
+                  <a class="btn btn-warning">Cancel</a>
+                </ng-container>
+                <ng-container *ngIf="item.type === 'received'">
+                  <a class="btn btn-success">Accept</a>
+                  <a class="btn btn-danger">Reject</a>
+                </ng-container>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <div class="card notification-card" *ngIf="requests.length < 1">
+        <div class="card-body">
+          <h4 class="text-center">You have no requests.</h4>
+        </div>
+      </div>
+    </ng-container>
+    <div class="lds-facebook" *ngIf="spinner">
+      <div></div>
+      <div></div>
+      <div></div>
+    </div>
   </div>
 </div>

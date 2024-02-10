@@ -7,7 +7,8 @@ import { AuthService } from '../auth/auth.service'
   templateUrl: './requests.component.html'
 })
 export class RequestsComponent implements OnInit {
-  temprequests = ['reuqests1', 'reuqests2', 'reuqests3', 'reuqests4', 'reuqests5']
+  requests: any[] = []
+  spinner = false
 
   constructor(
     private authService: AuthService,
@@ -15,11 +16,21 @@ export class RequestsComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.spinner = true
     this.apiService.callApi('get_my_requests', 'POST', {
-      email: this.authService.userData.email
+      my_user_id: this.authService.userData.id
     }).subscribe({
       next: (response: any) => {
-        console.log('response from get_my_requests : ' + response)
+        console.log('response from get_my_requests : ',  response)
+        this.spinner = false
+        if(response.success) {
+          this.requests = response.requests
+        } else [
+          this.requests = []
+        ]        
+      }, error: () => {
+        this.spinner = false
+        this.requests = []
       }
     })
   }

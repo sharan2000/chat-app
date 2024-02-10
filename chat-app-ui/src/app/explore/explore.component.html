@@ -14,7 +14,9 @@
             <ng-container *ngIf="item.connected === 0">
               <span class="badge bg-info" *ngIf="item.in_request; else notinrequests">in requests</span>
               <ng-template #notinrequests>
-                <button class="btn btn-sm btn-success" > + </button>
+                <button type="btn btn-sm btn-success" class="button" [ngClass]="{'button--loading' : friendSpinnerMap.get(item.id)}" (click)="addUserToFriends(item)">
+                  <span class="button__text"> + </span>
+                </button>
               </ng-template>
             </ng-container>
             
@@ -29,7 +31,9 @@
         <li *ngFor="let item of rooms">
           <span>{{item.roomname}}</span>
           <div class="request-buttons">
-            <button class="btn btn-sm btn-success" *ngIf="item.connected === 0"> + </button>
+            <button *ngIf="item.connected === 0" type="btn btn-sm btn-success" class="button" [ngClass]="{'button--loading' : roomsSpinnerMap.get(item.id)}" (click)="addRoomToUser(item)">
+              <span class="button__text"> + </span>
+            </button>
             <button class="btn btn-sm btn-warning" *ngIf="item.connected === 1"> - </button>
           </div>
         </li>

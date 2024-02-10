@@ -399,3 +399,110 @@ a.white-text:hover {
   padding: 0px 5px;
   margin-left: 3px;
 }
+
+
+/* button spinner below */
+
+.button {
+  position: relative;
+  padding: 8px 16px;
+  background: #009579;
+  border: none;
+  outline: none;
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.button:active {
+  background: #007a63;
+}
+
+.button__text {
+  font: bold 20px "Quicksand", san-serif;
+  color: #ffffff;
+  transition: all 0.2s;
+}
+
+.button--loading .button__text {
+  visibility: hidden;
+  opacity: 0;
+}
+
+.button--loading::after {
+  content: "";
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: auto;
+  border: 4px solid transparent;
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: button-loading-spinner 1s ease infinite;
+}
+
+@keyframes button-loading-spinner {
+  from {
+    transform: rotate(0turn);
+  }
+
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+/* requests component styling below */
+
+#requests .row {
+  margin: auto;
+  width: 90%;
+  display: flex;
+  flex-flow: column;
+  .card {
+    width: 100%;
+    margin-bottom: 5px;
+    display: block;
+  }
+}
+
+#requests .card-body {
+  padding: 0.5rem;
+  table {
+    width: 100%;
+    tr {
+      display: flex;
+      td {
+        a.btn {
+          font-size: 0.8rem;
+          padding: 0.25rem;
+          margin: 5px 5px 0 0;
+        }
+      }
+      td:nth-child(2) {
+        text-align: right;
+        justify-content: space-around;
+      }
+    }
+  }
+}
+
+#requests .card-title:before {
+  display: inline-block;
+  font-weight: 900;
+  font-size: 1.1rem;
+  text-align: center;
+  border: 2px solid grey;
+  border-radius: 100px;
+  width: 30px;
+  height: 30px;
+  padding-bottom: 3px;
+  margin-right: 10px;
+}
+
+#header {
+  margin-bottom: 0.75rem;
+  margin-top: 0.75rem;
+}
