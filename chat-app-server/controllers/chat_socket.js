@@ -194,7 +194,12 @@ const deleteSession = async (sessionId) => {
   })
 }
 
+const getChatNamespace = () => {
+  return chatNamespace
+}
+
 
 module.exports = {
+  getChatNamespace,
   initializeChatSocket
 }

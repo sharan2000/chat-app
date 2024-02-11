@@ -1,13 +1,8 @@
 <div class="row" id="requests-div">
-  <div class="lds-facebook" *ngIf="spinner">
-    <div></div>
-    <div></div>
-    <div></div>
-  </div>
-  <ng-container *ngIf="!spinner">
-    <div class="col">
-      <ul class="chat-list bg-light">
-        <li><span class="badge bg-secondary list-type"> Users </span></li>
+  <div class="col">
+    <ul class="chat-list bg-light">
+      <li><span class="badge bg-secondary list-type"> Users </span></li>
+      <ng-container *ngIf="!spinnerUsers; else commonspinner">
         <li *ngFor="let item of users_vals">
           <span>{{item.username}}</span>
           <div class="request-buttons">
@@ -23,11 +18,13 @@
             <button class="btn btn-sm btn-warning" *ngIf="item.connected === 1"> - </button>
           </div>
         </li>
-      </ul>
-    </div>
-    <div class="col">
-      <ul class="chat-list bg-light">
-        <li><span class="badge bg-secondary list-type"> Rooms </span></li>
+      </ng-container>
+    </ul>
+  </div>
+  <div class="col">
+    <ul class="chat-list bg-light">
+      <li><span class="badge bg-secondary list-type"> Rooms </span></li>
+      <ng-container *ngIf="!spinnerRooms; else commonspinner">
         <li *ngFor="let item of rooms">
           <span>{{item.roomname}}</span>
           <div class="request-buttons">
@@ -37,7 +34,18 @@
             <button class="btn btn-sm btn-warning" *ngIf="item.connected === 1"> - </button>
           </div>
         </li>
-      </ul>
-    </div>
-  </ng-container>
+      </ng-container>
+    </ul>
+  </div>
 </div>
+
+<!-- this spinner will be added as an element in the list above -->
+<ng-template #commonspinner>
+  <li>
+    <div class="lds-facebook">
+      <div></div>
+      <div></div>
+      <div></div>
+    </div>
+  </li>
+</ng-template>

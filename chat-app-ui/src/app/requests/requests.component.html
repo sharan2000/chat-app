@@ -13,11 +13,11 @@
               </td>
               <td style="width:30%">
                 <ng-container *ngIf="item.type === 'sent'">
-                  <a class="btn btn-warning">Cancel</a>
+                  <a class="btn btn-warning" (click)="takeAction(2, item)">Cancel</a>
                 </ng-container>
                 <ng-container *ngIf="item.type === 'received'">
-                  <a class="btn btn-success">Accept</a>
-                  <a class="btn btn-danger">Reject</a>
+                  <a class="btn btn-success" (click)="takeAction(1, item)">Accept</a>
+                  <a class="btn btn-danger" (click)="takeAction(2, item)">Reject</a>
                 </ng-container>
               </td>
             </tr>

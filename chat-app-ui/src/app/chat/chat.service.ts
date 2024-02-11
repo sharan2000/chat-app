@@ -11,6 +11,8 @@ export class ChatService implements OnDestroy {
   newMessages = new Subject<string>()
   userStatus = new Subject<any>()
   roomsData = new Subject<any>()
+  requestObject = new Subject<any>()
+
   socket: any
 
   constructor(
@@ -55,6 +57,12 @@ export class ChatService implements OnDestroy {
 
     this.socket.on('new_message', (data: any) => {
       this.newMessages.next(data)
+    })
+
+    // below events are related to requests and explore pages
+    this.socket.on('user_request', (object: any) => {
+      console.log('user_request event object -- ', object)
+      this.requestObject.next(object)
     })
   }
 

@@ -1,4 +1,6 @@
-import { Component, OnInit } from '@angular/core'
+import { ChatService } from './../chat/chat.service';
+import { Subscription } from 'rxjs';
+import { Component, OnInit, OnDestroy } from '@angular/core'
 import { ApiService } from '../api.service'
 import { AuthService } from '../auth/auth.service'
 
@@ -6,16 +8,30 @@ import { AuthService } from '../auth/auth.service'
   selector: 'app-requests',
   templateUrl: './requests.component.html'
 })
-export class RequestsComponent implements OnInit {
+export class RequestsComponent implements OnInit, OnDestroy {
   requests: any[] = []
   spinner = false
+  requestObjectSubscription: Subscription|undefined
+
 
   constructor(
     private authService: AuthService,
-    private apiService: ApiService
+    private apiService: ApiService,
+    private chatService: ChatService
   ) {}
 
   ngOnInit() {
+    this.requestObjectSubscription = this.chatService.requestObject.subscribe({
+      next: (object) => {
+        // new request is added. So we should update our list
+        this.requests.push(object.data)
+      }
+    })
+
+    this.getMyRequests()
+  }
+
+  getMyRequests() {
     this.spinner = true
     this.apiService.callApi('get_my_requests', 'POST', {
       my_user_id: this.authService.userData.id
@@ -35,6 +51,17 @@ export class RequestsComponent implements OnInit {
     })
   }
 
+  takeAction(type: number, item: any) {
+    console.log('take action type -- ', item)
+    /*
+      - here type '1' means 'Accept' the request
+      - here type '2' means both 'Cancel' or 'Reject' because in both cases we just delete the record from
+        user_requests table
+    */
+  }
 
+  ngOnDestroy(): void {
+    this.requestObjectSubscription?.unsubscribe()
+  }
 
 }
