@@ -12,6 +12,7 @@ export class ChatService implements OnDestroy {
   userStatus = new Subject<any>()
   roomsData = new Subject<any>()
   requestObject = new Subject<any>()
+  requestActionPerformed = new Subject<any>()
 
   socket: any
 
@@ -64,6 +65,11 @@ export class ChatService implements OnDestroy {
       console.log('user_request event object -- ', object)
       this.requestObject.next(object)
     })
+
+    this.socket.on('request_action_performed', (object: any) => {
+      this.requestActionPerformed.next(object)
+    })
+    
   }
 
   sendMessage(body: any) {

@@ -18,7 +18,7 @@ export class ExploreComponent implements OnInit, OnDestroy {
   roomsSpinnerMap = new Map()
 
   requestObjectSubscription: Subscription|undefined
-
+  requestActionPerformedSubscription: Subscription|undefined
 
   constructor(
     private authService: AuthService,
@@ -31,6 +31,17 @@ export class ExploreComponent implements OnInit, OnDestroy {
       next: (data) => {
         // we are updating the '+' button to add a user to 'in_requests' because a requests is sent or received
         this.users_object[data.user_id].in_request = true
+      }
+    })
+    this.requestActionPerformedSubscription = this.chatService.requestActionPerformed.subscribe({
+      next: (data) => {
+        // we update the explore list if any action has been performed by the user in requests page
+        if (data.action_taken_user_id && this.users_object[data.action_taken_user_id]) {
+          if(data.type === 1) { // accept request
+            this.users_object[data.action_taken_user_id].connected = 1 // accepted so connected
+          }
+          this.users_object[data.action_taken_user_id].in_request = false // beacuse we remove it in requests
+        }
       }
     })
 
@@ -119,5 +130,6 @@ export class ExploreComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.requestObjectSubscription?.unsubscribe()
+    this.requestActionPerformedSubscription?.unsubscribe()
   }
 }

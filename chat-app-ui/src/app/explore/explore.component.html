@@ -9,7 +9,7 @@
             <ng-container *ngIf="item.connected === 0">
               <span class="badge bg-info" *ngIf="item.in_request; else notinrequests">in requests</span>
               <ng-template #notinrequests>
-                <button type="btn btn-sm btn-success" class="button" [ngClass]="{'button--loading' : friendSpinnerMap.get(item.id)}" (click)="addUserToFriends(item)">
+                <button class="button" [ngClass]="{'button--loading' : friendSpinnerMap.get(item.id)}" (click)="addUserToFriends(item)">
                   <span class="button__text"> + </span>
                 </button>
               </ng-template>

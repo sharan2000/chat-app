@@ -13,6 +13,7 @@ import { ShortUsernamePipe } from './utils/short-username.pipe';
 import { RootComponent } from './root.component';
 import { RequestsComponent } from './requests/requests.component';
 import { ExploreComponent } from './explore/explore.component';
+import { ToastNoAnimationModule } from 'ngx-toastr';
 
 @NgModule({
   declarations: [
@@ -30,14 +31,15 @@ import { ExploreComponent } from './explore/explore.component';
     CommonModule,
     HttpClientModule,
     FormsModule,
-    AppRoutingModule
+    AppRoutingModule,
+    ToastNoAnimationModule.forRoot(), // ToastrModule added
   ],
   providers: [
     {
       provide: HTTP_INTERCEPTORS,
       useClass: AuthInterceptor,
       multi: true
-    }
+    },
   ],
   bootstrap: [AppComponent]
 })

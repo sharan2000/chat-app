@@ -12,13 +12,18 @@
                 <div style="font-size: 0.75rem"><em><span class="message-data-time">{{ item.sent_at | date:'d/M/yy, h:mm a' }}</span></em></div>
               </td>
               <td style="width:30%">
-                <ng-container *ngIf="item.type === 'sent'">
-                  <a class="btn btn-warning" (click)="takeAction(2, item)">Cancel</a>
+                <ng-container *ngIf="!requestActionSpinner.get(item.id); else spinner">
+                  <ng-container *ngIf="item.type === 'sent'">
+                    <a class="btn btn-warning" (click)="takeAction(2, item)">Cancel</a>
+                  </ng-container>
+                  <ng-container *ngIf="item.type === 'received'">
+                    <a class="btn btn-success" (click)="takeAction(1, item)">Accept</a>
+                    <a class="btn btn-danger" (click)="takeAction(2, item)">Reject</a>
+                  </ng-container>
                 </ng-container>
-                <ng-container *ngIf="item.type === 'received'">
-                  <a class="btn btn-success" (click)="takeAction(1, item)">Accept</a>
-                  <a class="btn btn-danger" (click)="takeAction(2, item)">Reject</a>
-                </ng-container>
+                <ng-template #spinner>
+                  <a class="button button--loading"></a>
+                </ng-template>
               </td>
             </tr>
           </table>
