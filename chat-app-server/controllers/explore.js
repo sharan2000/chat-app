@@ -102,8 +102,7 @@ const add_or_remove_user_friend = async (req, res) => {
       // in some extreme cases a user can duplicate requests so first we check if the request is already there
       let prevReq = await UserRequests.query()
       .select('id')
-      .where('from_user_id', my_user_id)
-      .andWhere('to_user_id', friend_user_id)
+      .whereRaw('(from_user_id = :my_user_id and to_user_id = :friend_user_id) or (from_user_id = :friend_user_id and to_user_id = :my_user_id)', { my_user_id, friend_user_id })
       if(prevReq.length) {
         throw new Error("request already sent to the user")
       }
@@ -147,7 +146,18 @@ const add_or_remove_user_friend = async (req, res) => {
       })
 
     } else if(type === 2) {
-      // do something
+      let res = await Friends.query().delete().whereRaw(`(user1_id = :my_user_id and user2_id = :friend_user_id) or (user1_id = :friend_user_id and user2_id = :my_user_id)`, { my_user_id, friend_user_id })
+      
+      console.log('res -- ', res)
+      if(res) { // if the friends link has been deleted then we can send a event to the friend and the user who clicked unfriend
+        getChatNamespace().to(friend_user_name).emit('user_unfriended', {
+          user_id: my_user_id,
+        })
+      }
+      // if the user clicked the button after coming online (already other user unfriended him when he is offline in network) then his button should be updated
+      getChatNamespace().to(my_user_name).emit('user_unfriended', {
+        user_id: friend_user_id,
+      })
 
     } else {
       throw new Error('Invalid type for action')

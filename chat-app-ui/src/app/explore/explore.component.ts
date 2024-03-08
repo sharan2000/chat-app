@@ -19,6 +19,7 @@ export class ExploreComponent implements OnInit, OnDestroy {
 
   requestObjectSubscription: Subscription|undefined
   requestActionPerformedSubscription: Subscription|undefined
+  userUnfriendedSubscription: Subscription|undefined
 
   constructor(
     private authService: AuthService,
@@ -31,6 +32,12 @@ export class ExploreComponent implements OnInit, OnDestroy {
       next: (data) => {
         // we are updating the '+' button to add a user to 'in_requests' because a requests is sent or received
         this.users_object[data.user_id].in_request = true
+      }
+    })
+    this.userUnfriendedSubscription = this.chatService.userUnfriended.subscribe({
+      next: (data) => {
+        // we are updating the '-' button to '+' because users are no longer friends
+        this.users_object[data.user_id].connected = 0
       }
     })
     this.requestActionPerformedSubscription = this.chatService.requestActionPerformed.subscribe({
@@ -96,12 +103,13 @@ export class ExploreComponent implements OnInit, OnDestroy {
     })
   }
 
-  addUserToFriends(item: any) {
+  addOrRemoveUserFriend(item: any, type: number) {
+    if(this.friendSpinnerMap.get(item.id)) { return } // if user is trying to click multiple times
     this.friendSpinnerMap.set(item.id, true)
-    console.log('clicked friend -- ', item)
+    console.log('clicked friend -- ', item, '\ntype -- ', type)
 
     this.apiService.callApi('add_or_remove_user_friend', 'POST', {
-      type: 1, // 1 is to add, 2 is to remove
+      type, // 1 is to add, 2 is to remove
       my_user_id: this.authService.userData.id, // from the logged in user
       friend_user_id: item.id, // to the user who we click on
       my_user_name: this.authService.userData.username,
@@ -110,7 +118,15 @@ export class ExploreComponent implements OnInit, OnDestroy {
       next: (response: any) => {
         console.log('response from add_or_remove_user_friend : ', response)
         if(response.success) {
+          if(type === 1) {
+            item.in_request = true // add to requests so remove the add button
+          } else if (type === 2) {
+            item.connected = 0 // removed as friend so connect is false
+          }
+        } else { // response.success will only be false when adding friend and a request already exists
+          // the user request already exists (means some corner case where user duplicated the tabs and went offline in one)
           item.in_request = true // add to requests so remove the add button
+          item.connected = 0 // removed as friend so connect is false (in add friend also this will be executed and change to same value)
         }
         this.friendSpinnerMap.delete(item.id) // stopping spinner
       },
@@ -131,5 +147,6 @@ export class ExploreComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.requestObjectSubscription?.unsubscribe()
     this.requestActionPerformedSubscription?.unsubscribe()
+    this.userUnfriendedSubscription?.unsubscribe()
   }
 }

@@ -13,6 +13,8 @@ export class ChatService implements OnDestroy {
   roomsData = new Subject<any>()
   requestObject = new Subject<any>()
   requestActionPerformed = new Subject<any>()
+  userUnfriended = new Subject<any>()
+
 
   socket: any
 
@@ -68,6 +70,10 @@ export class ChatService implements OnDestroy {
 
     this.socket.on('request_action_performed', (object: any) => {
       this.requestActionPerformed.next(object)
+    })
+
+    this.socket.on('user_unfriended', (object: any) => {
+      this.userUnfriended.next(object)
     })
     
   }
