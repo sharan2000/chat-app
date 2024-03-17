@@ -31,10 +31,13 @@
         <li *ngFor="let item of rooms">
           <span>{{item.roomname}}</span>
           <div class="request-buttons">
-            <button *ngIf="item.connected === 0" type="btn btn-sm btn-success" class="button" [ngClass]="{'button--loading' : roomsSpinnerMap.get(item.id)}" (click)="addRoomToUser(item)">
+            <button *ngIf="item.connected === 0" type="btn btn-sm btn-success" class="button" [ngClass]="{'button--loading' : roomsSpinnerMap.get(item.id)}" (click)="addOrRemoveRoomToUser(item, 1)">
               <span class="button__text"> + </span>
             </button>
-            <button class="btn btn-sm btn-warning" *ngIf="item.connected === 1"> - </button>
+
+            <button *ngIf="item.connected === 1" class="button_yellow" [ngClass]="{'button_yellow--loading' : roomsSpinnerMap.get(item.id)}" (click)="addOrRemoveRoomToUser(item, 2)">
+              <span class="button_yellow__text" style="color:black"> - </span>
+            </button>
           </div>
         </li>
       </ng-container>

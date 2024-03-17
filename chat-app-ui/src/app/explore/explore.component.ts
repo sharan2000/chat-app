@@ -136,12 +136,29 @@ export class ExploreComponent implements OnInit, OnDestroy {
     })
   }
 
-  addRoomToUser(item: any) {
+  addOrRemoveRoomToUser(item: any, type: number) {
+    if(this.roomsSpinnerMap.get(item.id)) { return } // if user is trying to click multiple times
     this.roomsSpinnerMap.set(item.id, true)
-    console.log(item)
-    setTimeout(() => {
-      this.roomsSpinnerMap.delete(item.id)
-    }, 3000)
+    console.log('add or delete room clicked -- ', item)
+    this.apiService.callApi('add_or_remove_user_room', 'POST', {
+      type, // 1 is to add, 2 is to remove
+      my_user_id: this.authService.userData.id, // from the logged in user
+      room_id: item.id
+    }).subscribe({
+      next: (response:any) => {
+        if(response.success) {
+          if(type === 1) {
+            item.connected = 1 // room added so remove the add button
+          } else if (type === 2) {
+            item.connected = 0 // room removed so change remove button
+          }
+        }
+        this.roomsSpinnerMap.delete(item.id) // stopping spinner
+      },
+      error: () => {
+        this.roomsSpinnerMap.delete(item.id) // stopping spinner
+      }
+    })
   }
 
   ngOnDestroy() {

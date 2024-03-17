@@ -173,8 +173,46 @@ const add_or_remove_user_friend = async (req, res) => {
   })
 }
 
+const add_or_remove_user_room = async (req, res) => {
+  console.log("entered into api : /add_or_remove_user_room");
+  let success, status = 200
+  try {
+    let payload = req.body
+    console.log('payload is -- ', payload)
+    if(payload.type === 1) { // add room to user
+      let existing_record = await UserRooms.query()
+      .select('*')
+      .where('user_id', payload.my_user_id)
+      .andWhere('room_id', payload.room_id)
+
+      if(existing_record.length === 0) {
+        await UserRooms.query().insert({
+          user_id: payload.my_user_id,
+          room_id: payload.room_id
+        })
+      }
+
+    } else if (payload.type === 2) {
+      // remove room to user
+      await UserRooms.query()
+      .delete()
+      .where('user_id', payload.my_user_id)
+      .andWhere('room_id', payload.room_id)
+    }
+    
+    success = true
+  } catch(err) {
+    console.log('an error occured ', err)
+    success = false
+  }
+  res.status(status).json({
+    success,
+  })
+}
+
 module.exports = {
   get_all_users,
   get_all_rooms,
-  add_or_remove_user_friend
+  add_or_remove_user_friend,
+  add_or_remove_user_room
 }
