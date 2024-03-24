@@ -3,6 +3,8 @@ const Messages = require("../models/messages")
 const Rooms = require("../models/rooms")
 const { getSessionStoreObject } = require('../knexConnection')
 const { raw } = require("objection")
+const Friends = require("../models/friends")
+const UserRooms = require("../models/user_rooms")
 
 /*
   - generally we should get this room names from the database.
@@ -20,11 +22,12 @@ const getUsersAndRoomsData = async (req, res) => {
   try {
     const payload = req.body
     const { email } = payload
+    const { id, username } = req.body.user_data
     console.log('payload -- ', payload)
 
     const promiseArr = []
-    promiseArr.push(getRoomsData())
-    promiseArr.push(getUsersForChatWithStatus())
+    promiseArr.push(getRoomsData(id, username))
+    promiseArr.push(getUsersForChatWithStatus(id, username))
 
     ;[data.roomsData, data.usersData] = await Promise.all(promiseArr) 
 
@@ -46,11 +49,43 @@ const getUsersAndRoomsData = async (req, res) => {
   })
 }
 
-const getUsersForChatWithStatus = async () => {
+const getUsersForChatWithStatus = async (id, username) => {
   let users = [], store_users = []
   try {
     let promiseArr = []
-    promiseArr.push(Users.query().select('username').orderBy('username'))
+
+    promiseArr.push(
+      await Friends.query()
+        .alias('ftn')
+        .select(raw('DISTINCT IF(ftn.user1_id = :id, ftn.user2_id, ftn.user1_id) as user_id', {id}))
+        .where('ftn.user1_id', id)
+        .orWhere('ftn.user2_id', id)
+    )
+
+    promiseArr.push(
+      await Messages.query()  // here we get user names and room names
+        .alias('mtn')
+        .select(raw('DISTINCT IF(mtn.from = :username, mtn.to, mtn.from) as user_name', {username}))
+        .where('mtn.from', username)
+        .orWhere('mtn.to', username)
+    )
+
+    let [dataForFriendsWithIds, dataForMessagedUsersWithNames] = await Promise.all(promiseArr)
+
+    let ids = [id] // adding my_user_id to see an option to chat with myself
+    let names = []
+    dataForFriendsWithIds.forEach(ele => ids.push(ele.user_id))
+    dataForMessagedUsersWithNames.forEach(ele => names.push(ele.user_name))
+
+    promiseArr = []
+    promiseArr.push(
+      Users.query()
+      .alias('ut')
+      .select('username')
+      .whereIn('ut.id', ids)
+      .orWhereIn('ut.username', names)
+      .orderBy('username')
+    )
     promiseArr.push(getAllSessions())
 
     ;[users, store_users] = await Promise.all(promiseArr)
@@ -58,6 +93,9 @@ const getUsersForChatWithStatus = async () => {
   } catch(err) {
     console.log("error in getUsersForChatWithStatus -- ", err)
   }
+
+  console.log('users -- ', users, ' -- store users -- ', store_users)
+
   let userDetailsAndRoomsObject = {}
   users.forEach(userData => {
     userDetailsAndRoomsObject[userData.username] = {
@@ -67,9 +105,8 @@ const getUsersForChatWithStatus = async () => {
   })
 
   store_users.forEach(store_user => {
-    userDetailsAndRoomsObject[store_user.user_data.username] = {
-      username: store_user.user_data.username,
-      connected: store_user.user_data.connected
+    if(userDetailsAndRoomsObject[store_user.user_data.username]) {
+      userDetailsAndRoomsObject[store_user.user_data.username].connected = store_user.user_data.connected
     }
   })
 
@@ -77,10 +114,37 @@ const getUsersForChatWithStatus = async () => {
   return userDetailsAndRoomsObject
 }
 
-const getRoomsData = async () => {
+const getRoomsData = async (id, username) => {
   const data = {}
   try {
-    let roomsData = await Rooms.query().select('roomname').orderBy('roomname')
+    let promiseArr = []
+    promiseArr.push(
+      await UserRooms.query()
+        .alias('urt')
+        .select('urt.room_id')
+        .where('urt.user_id', id)
+    )
+
+    promiseArr.push(
+      await Messages.query()
+        .alias('mtn')
+        .select(raw('DISTINCT mtn.to')) // here we get user names and room names
+        .where('mtn.from', username)
+    )
+
+    
+    let [dataForRoomsWithIds, dataForMessagedRoomNames] = await Promise.all(promiseArr)
+
+    let ids = []
+    let names = []
+    dataForRoomsWithIds.forEach(ele => ids.push(ele.room_id))
+    dataForMessagedRoomNames.forEach(ele => names.push(ele.to))
+
+    let roomsData = await Rooms.query()
+    .select('roomname')
+    .whereIn('id', ids)
+    .orWhereIn('roomname', names)
+    .orderBy('roomname')
     roomsData.forEach(room => {
       data[room.roomname] = {
         room_name: room.roomname,
