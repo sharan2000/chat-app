@@ -22,7 +22,8 @@
               [ngClass]="{ active: (item.username === selectedChat?.name) }" (click)="chatSelected(item)">
               <!-- <img src="https://bootdey.com/img/Content/avatar/avatar1.png" alt="avatar"> -->
               <div class="about">
-                <div class="name">{{ item.username }} {{ (item.username === authService.userData.username) ? " (yourself)"
+                <div class="name">{{ item.username }} {{ (item.username === authService.userData.username) ? "
+                  (yourself)"
                   : "" }}</div>
                 <div class="status"> <i class="icon" [ngClass]="{ connected: item.connected }"></i> {{item.connected ?
                   'online' : 'offline'}} </div>
@@ -121,11 +122,7 @@
             </div>
           </div>
           <div class="chat-message clearfix">
-            <!-- <div class="input-group mb-0"> -->
-            <!-- <div class="input-group-prepend">
-                <span class="input-group-text"><i class="fa fa-send"></i></span>
-              </div> -->
-            <form class="form">
+            <form class="form" *ngIf="show_type_message_box">
               <textarea [(ngModel)]="userEnteredMessage" #message="ngModel" name="userEnteredMessage"
                 placeholder="Your message... (should contain less than or equal to 3000 characters)" class="input"
                 required minLength="1" maxLength="1000" (keyup)="removeExtraSpaces('userEnteredMessage')"></textarea>
@@ -134,8 +131,11 @@
               <button class="send-button ms-2 btn btn-sm btn-secondary" style="border-radius: 50%;"
                 (click)="scrollToTopOfChat()">top</button>
             </form>
-            <!-- <input type="text" class="form-control" placeholder="Enter text here...">                                     -->
-            <!-- </div> -->
+            <div class="card m-1 text-center" *ngIf="!show_type_message_box">
+              <div class="card-body">
+                <h5 class="card-title">You cannot have a conversation here.</h5>
+              </div>
+            </div>
           </div>
         </ng-container>
 
@@ -158,7 +158,8 @@
 </div>
 
 <!-- Modal -->
-<div class="modal show modal-background" [ngStyle]="{display: showAddModal ? 'block' : 'none'}"  id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+<div class="modal show modal-background" [ngStyle]="{display: showAddModal ? 'block' : 'none'}" id="staticBackdrop"
+  data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
@@ -170,12 +171,16 @@
           <ng-container *ngIf="modalViewNumber === 1">
             <div class="input-group mb-3 has-validation">
               <label for="basic-url" class="input-group-text">Enter room name</label>
-              <input type="text" #entRoomName="ngModel" name="enteredRoomName" class="form-control {{ errorResponse?.roomname ? 'is-invalid' : ''}}" id="basic-url" [(ngModel)]="enteredRoomName" required minLength="1" maxLength="60" (keyup)="removeExtraSpaces('enteredRoomName')">
+              <input type="text" #entRoomName="ngModel" name="enteredRoomName"
+                class="form-control {{ errorResponse?.roomname ? 'is-invalid' : ''}}" id="basic-url"
+                [(ngModel)]="enteredRoomName" required minLength="1" maxLength="60"
+                (keyup)="removeExtraSpaces('enteredRoomName')">
               <div class="invalid-feedback" *ngIf="errorResponse?.roomname">
                 {{ errorResponse?.roomname }}
               </div>
             </div>
-            <button type="button" class="btn btn-primary" [disabled]="!entRoomName.valid" (click)="onAddRoom()">Submit</button>
+            <button type="button" class="btn btn-primary" [disabled]="!entRoomName.valid"
+              (click)="onAddRoom()">Submit</button>
           </ng-container>
           <ng-container *ngIf="modalViewNumber === 2">
             <h3>Room added successfully.</h3>

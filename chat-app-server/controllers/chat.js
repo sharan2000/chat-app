@@ -55,7 +55,7 @@ const getUsersForChatWithStatus = async (id, username) => {
     let promiseArr = []
 
     promiseArr.push(
-      await Friends.query()
+      Friends.query()
         .alias('ftn')
         .select(raw('DISTINCT IF(ftn.user1_id = :id, ftn.user2_id, ftn.user1_id) as user_id', {id}))
         .where('ftn.user1_id', id)
@@ -63,7 +63,7 @@ const getUsersForChatWithStatus = async (id, username) => {
     )
 
     promiseArr.push(
-      await Messages.query()  // here we get user names and room names
+      Messages.query()  // here we get user names and room names
         .alias('mtn')
         .select(raw('DISTINCT IF(mtn.from = :username, mtn.to, mtn.from) as user_name', {username}))
         .where('mtn.from', username)
@@ -81,7 +81,7 @@ const getUsersForChatWithStatus = async (id, username) => {
     promiseArr.push(
       Users.query()
       .alias('ut')
-      .select('username')
+      .select('username', 'id')
       .whereIn('ut.id', ids)
       .orWhereIn('ut.username', names)
       .orderBy('username')
@@ -100,10 +100,13 @@ const getUsersForChatWithStatus = async (id, username) => {
   users.forEach(userData => {
     userDetailsAndRoomsObject[userData.username] = {
       username: userData.username,
-      connected: false
+      connected: false,
+      id: userData.id
     }
   })
 
+  console.log('userDetailsAndRoomsObject -- ', userDetailsAndRoomsObject)
+  console.log('store_users -- ', store_users)
   store_users.forEach(store_user => {
     if(userDetailsAndRoomsObject[store_user.user_data.username]) {
       userDetailsAndRoomsObject[store_user.user_data.username].connected = store_user.user_data.connected
@@ -119,14 +122,14 @@ const getRoomsData = async (id, username) => {
   try {
     let promiseArr = []
     promiseArr.push(
-      await UserRooms.query()
+      UserRooms.query()
         .alias('urt')
         .select('urt.room_id')
         .where('urt.user_id', id)
     )
 
     promiseArr.push(
-      await Messages.query()
+      Messages.query()
         .alias('mtn')
         .select(raw('DISTINCT mtn.to')) // here we get user names and room names
         .where('mtn.from', username)
@@ -141,13 +144,14 @@ const getRoomsData = async (id, username) => {
     dataForMessagedRoomNames.forEach(ele => names.push(ele.to))
 
     let roomsData = await Rooms.query()
-    .select('roomname')
+    .select('roomname', 'id')
     .whereIn('id', ids)
     .orWhereIn('roomname', names)
     .orderBy('roomname')
     roomsData.forEach(room => {
       data[room.roomname] = {
         room_name: room.roomname,
+        room_id: room.id
         // we can add any additional information in future
       }
     })
@@ -194,25 +198,44 @@ const getAllSessions = async () => {
 
 const getChat = async (req, res, next) => {
   console.log("entered into api : /get_chat");
-  let messages, success, status, error
+  let messages = [], success, status, error, is_connected = false
   try {
     const payload = req.body
-    const { from, to } = payload
+    const from = req.body.user_data.username
+    const from_id = req.body.user_data.id
+    const { to, to_id } = payload // to is friend_user_name and to_id is friend_user_id
     console.log('payload -- ', payload)
+
+    const promiseArr = []
+    let friendsData = []
+
+    // first check if there two are friends to enable sending messages
+    promiseArr.push(
+      Friends.query()
+      .select('id')
+      .whereRaw('(user1_id = :to_id and user2_id = :from_id) or (user1_id = :from_id and user2_id = :to_id)', {from_id, to_id})
+    )
 
     // get messages
     const mtn = Messages.tableName
-    messages = await Messages.query()
-    .select(raw(`${mtn}.from as name, ${mtn}.message, DATE_FORMAT(${mtn}.time, '%Y-%m-%dT%TZ') as time`)) // converting to ISO so that frontend can parse it to local time
-    .where(raw(`(${mtn}.from = ? AND ${mtn}.to = ?)`, from, to))
-    .orWhere(raw(`(${mtn}.from = ? AND ${mtn}.to = ?)`, to, from))
-    .orderBy('time')
+    promiseArr.push(
+      Messages.query()
+      .select(raw(`${mtn}.from as name, ${mtn}.message, DATE_FORMAT(${mtn}.time, '%Y-%m-%dT%TZ') as time`)) // converting to ISO so that frontend can parse it to local time
+      .where(raw(`(${mtn}.from = ? AND ${mtn}.to = ?)`, from, to))
+      .orWhere(raw(`(${mtn}.from = ? AND ${mtn}.to = ?)`, to, from))
+      .orderBy('time')
+    )
+
+    ;[friendsData, messages] = await Promise.all(promiseArr)
+    if(friendsData?.length || (from_id === to_id)) { is_connected = true }
+
     console.log('messages are -- ', messages)
 
     success = true
     status = 200
   } catch(err) {
     messages = []
+    is_connected = false
     success = false
     status = 200
     error = 'Error when getting messages'
@@ -220,6 +243,7 @@ const getChat = async (req, res, next) => {
   }
   res.status(status).json({
     messages,
+    is_connected,
     success,
     error
   })
@@ -227,24 +251,37 @@ const getChat = async (req, res, next) => {
 
 const getChatForRoom = async (req, res, next) => {
   console.log("entered into api : /get_chat_for_room");
-  let messages, success, status, error
+  let messages = [], success, status, error, is_connected = false
   try {
     const payload = req.body
-    const { to } = payload
+    const { to, to_id } = payload // to_id is the room_id
+    const my_user_id = req.body.user_data.id
     console.log('payload -- ', payload)
+
+    const promiseArr = []
+    let roomData
+
+    promiseArr.push(UserRooms.query().where('user_id', my_user_id).andWhere('room_id', to_id))
 
     // get messages
     const mtn = Messages.tableName
-    messages = await Messages.query()
-    .select(raw(`${mtn}.from as name, ${mtn}.message, DATE_FORMAT(${mtn}.time, '%Y-%m-%dT%TZ') as time`)) // converting to ISO so that frontend can parse it to local time
-    .where(raw(`${mtn}.to = ?`, to))
-    .orderBy('time')
-    console.log('room messages are -- ', messages)
+    promiseArr.push(
+      Messages.query()
+      .select(raw(`${mtn}.from as name, ${mtn}.message, DATE_FORMAT(${mtn}.time, '%Y-%m-%dT%TZ') as time`)) // converting to ISO so that frontend can parse it to local time
+      .where(raw(`${mtn}.to = ?`, to))
+      .orderBy('time')
+    )
+
+    ;[roomData, messages] = await Promise.all(promiseArr)
+    if(roomData?.length) { is_connected = true }
+
+    console.log('room messages are -- ', messages, roomData)
 
     success = true
     status = 200
   } catch(err) {
     messages = []
+    is_connected = false
     success = false
     status = 200
     error = 'Error when getting messages'
@@ -252,6 +289,7 @@ const getChatForRoom = async (req, res, next) => {
   }
   res.status(status).json({
     messages,
+    is_connected,
     success,
     error
   })

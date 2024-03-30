@@ -23,6 +23,7 @@ export class ChatComponent implements OnInit {
   roomsDataValues: any
   selectedChat: any
   chatSpinner = false
+  show_type_message_box = false
   namesFilter = ''
   hideMenu = false
   showAddModal = false
@@ -107,6 +108,7 @@ export class ChatComponent implements OnInit {
 
   // when user chat is selected; i.e, one-on-one chat
   chatSelected(selecteItem: any) {
+    this.show_type_message_box = false
     this.chatSpinner = true
     console.log('selected chat --- ', selecteItem)
     this.selectedChat = {
@@ -115,12 +117,13 @@ export class ChatComponent implements OnInit {
       is_user: true
     }
     let payload = {
-      from: this.authService.userData.username,
-      to: this.selectedChat.name
+      to: this.selectedChat.name,
+      to_id: selecteItem.id // friend user id
     }
     this.apiService.callApi('get_chat', 'POST', payload).subscribe({
       next: (response: any) => {
         console.log(`chat between '${this.authService.userData.username}' and '${selecteItem.username}' -- `, response)
+        this.show_type_message_box = response.is_connected // is both users currently friends
         this.messageArray = response.messages
         this.chatSpinner = false
         this.scrollToBottomOfChat() // scroll to bottom of page
@@ -139,7 +142,8 @@ export class ChatComponent implements OnInit {
       name: selecteItem.room_name
     }
     let payload = {
-      to: this.selectedChat.name
+      to: this.selectedChat.name,
+      to_id: selecteItem.room_id // it is the room_id
     }
     this.apiService.callApi('get_chat_for_room', 'POST', payload).subscribe({
       next: (response: any) => {
