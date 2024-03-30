@@ -160,6 +160,7 @@ export class ChatComponent implements OnInit {
 
   // when any other chat is selected; i.e, NOT one-on-one chat (rooms, etc)
   chatRoomSelected(selecteItem: any) {
+    this.show_type_message_box = false
     this.chatSpinner = true
     console.log('selected chat room --- ', selecteItem)
     this.selectedChat = {
@@ -173,6 +174,7 @@ export class ChatComponent implements OnInit {
       next: (response: any) => {
         console.log(`chat for room '${this.selectedChat.name}' -- `, response)
         this.messageArray = response.messages
+        this.show_type_message_box = response.is_connected // is user currently linked to the room
         this.chatSpinner = false
         this.scrollToBottomOfChat() // scroll to bottom of page
       },
