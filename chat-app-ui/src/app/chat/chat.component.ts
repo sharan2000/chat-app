@@ -32,6 +32,8 @@ export class ChatComponent implements OnInit {
   errorResponse: any
   modalViewNumber = 1
   ufspinner = false
+  userUnfriendedSubscription: Subscription|undefined
+  requestActionPerformedSubscription: Subscription|undefined
   
   constructor(
     protected authService: AuthService,
@@ -57,6 +59,28 @@ export class ChatComponent implements OnInit {
       },
       error: (errorResponse: any) => {
         this.ufspinner = false
+      }
+    })
+
+    this.userUnfriendedSubscription = this.chatService.userUnfriended.subscribe({
+      next: (userData: any) => {
+        console.log('select chat -- ', this.selectedChat)
+        console.log('unfriended data -- ', userData)
+        // we are updating the chat screen for the user if he is currently chatting with a friend that unfriended him
+        if(this.selectedChat?.connected != undefined && this.selectedChat?.name === userData.user_name) {
+          this.show_type_message_box = false
+        }
+      }
+    })
+
+    this.requestActionPerformedSubscription = this.chatService.requestActionPerformed.subscribe({
+      next: (actionData: any) => {
+        console.log('select chat -- ', this.selectedChat)
+        console.log('unfriended data -- ', actionData)
+        // we are updating the chat screen for the user if he is currently in chat with a friend that accepted the new request
+        if(actionData.type === 1 && this.selectedChat?.connected != undefined && this.selectedChat?.name === actionData.other_username) {
+          this.show_type_message_box = true
+        }
       }
     })
 
@@ -228,6 +252,8 @@ export class ChatComponent implements OnInit {
     this.newMessagesSubscription?.unsubscribe()
     this.userStatusSubscription?.unsubscribe()
     this.roomsDataSubscription?.unsubscribe()
+    this.userUnfriendedSubscription?.unsubscribe()
+    this.requestActionPerformedSubscription?.unsubscribe()
   }
 
 }

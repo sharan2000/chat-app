@@ -43,6 +43,12 @@ const take_action_on_request = async (req, res) => {
     const request_data = await UserRequests.query().where('id', request_id)
     console.log('fetched requests in action -- ', request_data)
 
+    /*
+      - a request can be accepted by any person from the two. one will be in requests page and other can be
+      in chat screen with the 'action taking' user screen. So we should send the 'action takin' username to the
+      other user to update the screeen and enable message box, since they are friends now.
+    */
+
     if(request_data.length) {
       await UserRequests.transaction(async (trx) => {
         if (type === 1) {
@@ -70,7 +76,7 @@ const take_action_on_request = async (req, res) => {
 
     if(action_success) {
       // emitting the events to their the respective users by using a custom event so that they can update their requests page
-      getChatNamespace().to(other_username).emit('request_action_performed', {action_taken_user_id, type, request_id})
+      getChatNamespace().to(other_username).emit('request_action_performed', {action_taken_user_id, type, other_username : req.body.user_data.username, request_id})
       // action_taken_user_id is used to update the users explore page if he is in that page and cnange properties according to action type
     }
     // we emit request_id for the user who clicked any action. (handles the case where one of the user is offline)

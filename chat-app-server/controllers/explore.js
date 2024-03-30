@@ -152,6 +152,7 @@ const add_or_remove_user_friend = async (req, res) => {
       if(res) { // if the friends link has been deleted then we can send a event to the friend and the user who clicked unfriend
         getChatNamespace().to(friend_user_name).emit('user_unfriended', {
           user_id: my_user_id,
+          user_name: my_user_name
         })
       }
       // if the user clicked the button after coming online (already other user unfriended him when he is offline in network) then his button should be updated
