@@ -13,6 +13,7 @@ class Users extends Model {
         username: { type: 'string', minLength: 1, maxLength: 255 },
         email: { type: 'string', minLength: 1, maxLength: 255 },
         password: { type: 'string', minLength: 1, maxLength: 255 },
+        role: { type: ['integer', 'null'] } // 1 - for admin, 2 - for user
       }
     };
   }

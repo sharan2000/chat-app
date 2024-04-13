@@ -9,12 +9,14 @@ import { AuthGuardFunction } from './auth/auth.guard';
 import { RootComponent } from './root.component';
 import { RequestsComponent } from './requests/requests.component';
 import { ExploreComponent } from './explore/explore.component';
+import { AdminActionsComponent } from './admin_actions/admin_actions.component';
 
 const routes: Routes = [
   {
     path: '',
     component: RootComponent,
     canActivate: [AuthGuardFunction],
+    canActivateChild: [AuthGuardFunction],
     children: [
       {
         path: 'dashboard',
@@ -32,6 +34,10 @@ const routes: Routes = [
         path: 'explore',
         component: ExploreComponent,
       },
+      {
+        path: 'admin_actions',
+        component: AdminActionsComponent,
+      }
     ],
   },
   {

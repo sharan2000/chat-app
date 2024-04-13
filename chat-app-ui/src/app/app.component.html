@@ -11,6 +11,9 @@
           <a class="nav-link" [routerLink]="'chat'" routerLinkActive="active">Chat</a>
           <a class="nav-link" [routerLink]="'requests'" routerLinkActive="active">Requests</a>
           <a class="nav-link" [routerLink]="'explore'" routerLinkActive="active">Explore</a>
+          <ng-container *ngIf="role === 1">
+            <a class="nav-link" [routerLink]="'admin_actions'" routerLinkActive="active">Admin Actions</a>
+          </ng-container>
         </ng-container>
         <ng-container *ngIf="!isAuthenticated">
           <a class="nav-link" aria-current="page" routerLink="auth" [queryParams]="{type: 'login'}" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Login</a>

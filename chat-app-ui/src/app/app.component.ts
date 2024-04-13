@@ -10,6 +10,7 @@ import { Router } from '@angular/router';
 })
 export class AppComponent implements OnInit, OnDestroy {
   isAuthenticated: boolean = false
+  role: number | undefined
   authLoggedInSubscription = new Subscription()
   collapseNav = true
 
@@ -20,8 +21,9 @@ export class AppComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.authLoggedInSubscription = this.authService.authLoggedIn.subscribe({
-      next: (isAuthenticated: any) => {
-        this.isAuthenticated = isAuthenticated
+      next: (data: any) => {
+        this.isAuthenticated = data.isAuthenticated
+        this.role = data.role
       }
     })
     this.authService.checkAndSetUserData()

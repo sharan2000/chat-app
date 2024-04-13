@@ -13,7 +13,7 @@ const login = async (req, res) => {
     const { email, password } = payload 
 
     // check if details
-    const user_data = await Users.query().select('id', 'email', 'password', 'username').where('email', email)
+    const user_data = await Users.query().select('*').where('email', email)
     if(user_data.length === 0) {
       errors['email'] = true
     }
@@ -35,7 +35,8 @@ const login = async (req, res) => {
       {
         id: user_data[0].id,
         email: user_data[0].email,
-        username: user_data[0].username
+        username: user_data[0].username,
+        role: user_data[0].role
       }, 
       process.env.JWT_SECRET, 
       { expiresIn: 60 * 60 } // takes in seconds
@@ -47,7 +48,8 @@ const login = async (req, res) => {
       user_data: {
         id: user_data[0].id,
         email: user_data[0].email,
-        username: user_data[0].username
+        username: user_data[0].username,
+        role: user_data[0].role
       },
       success: true,
       message: 'login successful',

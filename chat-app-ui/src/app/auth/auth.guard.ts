@@ -9,10 +9,10 @@ import { AuthService } from './auth.service'
 export class AuthGuardService {
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
   ) {}
 
-  canActivate(): boolean {
+  canActivate(state: RouterStateSnapshot): boolean {
     const token = sessionStorage.getItem('token');
     let return_val = false
 
@@ -26,7 +26,12 @@ export class AuthGuardService {
         return_val = false
       }
     }
-    if(!return_val) {
+    /*
+      - If the user is going to /admin_actions then we neeed to check if the user role is admin
+      - admin role_id is 1
+      - If the user does not have that role id log them out and navigate them to login page
+    */
+    if(!return_val || (state.url === '/admin_actions' && this.authService.userData.role != 1)) {
       this.authService.logout()
       this.router.navigate(['/auth'], { queryParams: {type: 'login'} })
     }
@@ -35,5 +40,5 @@ export class AuthGuardService {
 }
 
 export const AuthGuardFunction: CanActivateFn = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
-  return inject(AuthGuardService).canActivate();
+  return inject(AuthGuardService).canActivate(state);
 };

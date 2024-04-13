@@ -314,10 +314,10 @@ const addNewChatRoom = async (req, res, next) => {
     success = true
     status = 200
   } catch(err) {
-    error = 'Same room exists. Try another name.'
+    error = err.message || 'Unexpected error occured when creating the room. Please try again.'
     success = false
     status = 200
-    console.log('error in get messages -- ', err)
+    console.log('error in add new chat room -- ', err.message)
   }
   res.status(status).json({
     success,

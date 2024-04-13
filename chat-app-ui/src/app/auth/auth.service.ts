@@ -2,17 +2,21 @@ import { ApiService } from './../api.service';
 import { Injectable } from '@angular/core'
 import { Subject } from 'rxjs'
 
+import CryptoJS from 'crypto-js'
+import { ENC_DEC_KEY } from '../../../env'
+
 @Injectable({
     providedIn: 'root'
 })
 export class AuthService {
-  authLoggedIn = new Subject<boolean>();
+  authLoggedIn = new Subject<any>();
   authStatus = new Subject<Object>();
   isAuthenticated: boolean = false
   userData = {
     email: '',
     username: '',
-    id: ''
+    id: '',
+    role: 0
   }
 
   constructor(
@@ -25,14 +29,17 @@ export class AuthService {
         console.log('login response -- ', response)
         if(response.success) {
           sessionStorage.setItem('token', response.token)
-          sessionStorage.setItem('userData', JSON.stringify(response.user_data))
+          sessionStorage.setItem('userData', this.encrypt(JSON.stringify(response.user_data)))
           this.userData = response.user_data
 
           this.authStatus.next({
             type: 'login',
             success: true
           })
-          this.authLoggedIn.next(true)
+          this.authLoggedIn.next({
+            isAuthenticated: true,
+            role: this.userData.role
+          })
           this.isAuthenticated = true
         } else {
           this.authStatus.next({
@@ -66,14 +73,17 @@ export class AuthService {
   }
 
   logout() {
-    this.authLoggedIn.next(false)
+    this.authLoggedIn.next({
+      isAuthenticated: false,
+      role: this.userData.role
+    })
     this.isAuthenticated = false
     sessionStorage.clear()
   }
 
   checkAndSetUserData() {
     const token = sessionStorage.getItem('token');
-    const data = sessionStorage.getItem('userData');
+    const data = this.decrypt(sessionStorage.getItem('userData'));
     if(token && data) {
       try {
         // getting user data
@@ -82,7 +92,10 @@ export class AuthService {
         // getting only the jwt part
         let jwt = token.slice(7) 
         if(!this.tokenExpired(jwt) && (Object.keys(this.userData).length)) {
-          this.authLoggedIn.next(true)
+          this.authLoggedIn.next({
+            isAuthenticated: true,
+            role: this.userData.role
+          })
           this.isAuthenticated = true
         }
 
@@ -98,5 +111,21 @@ export class AuthService {
   tokenExpired(token: string) {
     const expiry = (JSON.parse(atob(token.split('.')[1]))).exp;
     return (Math.floor((new Date).getTime() / 1000)) >= expiry;
+  }
+
+  //To encrypt input data
+  public encrypt(data: string): string {
+    return CryptoJS.AES.encrypt(data, ENC_DEC_KEY).toString();
+  }
+
+  //To decrypt input data
+  public decrypt(data: any) {
+    let response = ''
+    try {
+      response = CryptoJS.AES.decrypt(data, ENC_DEC_KEY).toString(CryptoJS.enc.Utf8);
+    } catch(err) {
+      response = ''
+    }
+    return response
   }
 }

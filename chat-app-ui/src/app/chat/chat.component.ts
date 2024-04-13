@@ -26,11 +26,7 @@ export class ChatComponent implements OnInit {
   show_type_message_box = false
   namesFilter = ''
   hideMenu = false
-  showAddModal = false
-  enteredRoomName = ''
-  spinner = false // add room functionality will be romve for the user
   errorResponse: any
-  modalViewNumber = 1
   ufspinner = false
   userUnfriendedSubscription: Subscription|undefined
   requestActionPerformedSubscription: Subscription|undefined
@@ -205,9 +201,6 @@ export class ChatComponent implements OnInit {
       case 'userEnteredMessage' :
         this.userEnteredMessage = this.userEnteredMessage.replace(/ {2,}/g, '')
         break
-      case 'enteredRoomName' :
-        this.enteredRoomName = this.enteredRoomName.replace(/ {2,}/g, '')
-        break
     }
   }
 
@@ -219,35 +212,6 @@ export class ChatComponent implements OnInit {
     this.roomsDataValues = Object.values(this.roomsDataObject).filter((data:any) => {
       return data.room_name.includes(this.namesFilter)
     })
-  }
-
-  onAddRoom() {
-    this.spinner = true
-    console.log(this.enteredRoomName)
-    this.apiService.callApi('add_new_chat_room', 'POST', { enteredRoomName : this.enteredRoomName }).subscribe({
-      next: (response: any) => {
-        this.spinner = false
-        if(response.success) {
-          this.chatService.emitNewRoomDetails(this.enteredRoomName)
-          this.modalViewNumber = 2
-        } else {
-          this.errorResponse = response.error
-        }
-      },
-      error: (errorResponse: any) => {
-        this.spinner = false
-        this.errorResponse = {
-          roomname: 'Network error. Please try again.'
-        }
-      }
-    })
-  }
-
-  openRoomModal() {
-    this.showAddModal = true
-    this.enteredRoomName = ''
-    this.errorResponse = null
-    this.modalViewNumber = 1
   }
 
   ngOnDestroy() {

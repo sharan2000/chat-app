@@ -1,0 +1,39 @@
+<div class="container-fluid py-3">
+  <span class="badge bg-secondary list-type">Add New Room</span>
+  <button class="btn btn-sm btn-success mx-3" (click)="openRoomModal()">+</button>
+</div>
+
+<!-- Modal -->
+<div class="modal show modal-background" [ngStyle]="{display: showAddModal ? 'block' : 'none'}" id="staticBackdrop"
+  data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="staticBackdropLabel">Add New Room</h1>
+        <button type="button" class="btn-close" (click)="showAddModal = false"></button>
+      </div>
+      <div class="modal-body">
+        <ng-container *ngIf="!spinner">
+          <ng-container *ngIf="modalViewNumber === 1">
+            <div class="input-group mb-3 has-validation">
+              <label for="basic-url" class="input-group-text">Enter room name</label>
+              <input type="text" #entRoomName="ngModel" name="enteredRoomName"
+                class="form-control {{ errorResponse?.roomname ? 'is-invalid' : ''}}" id="basic-url"
+                [(ngModel)]="enteredRoomName" required minLength="1" maxLength="60"
+                (keyup)="removeExtraSpaces('enteredRoomName')">
+              <div class="invalid-feedback" *ngIf="errorResponse?.roomname">
+                {{ errorResponse?.roomname }}
+              </div>
+            </div>
+            <button type="button" class="btn btn-primary" [disabled]="!entRoomName.valid"
+              (click)="onAddRoom()">Submit</button>
+          </ng-container>
+          <ng-container *ngIf="modalViewNumber === 2">
+            <h3>Room added successfully.</h3>
+          </ng-container>
+        </ng-container>
+        <div *ngIf="spinner" class="lds-dual-ring"></div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -14,12 +14,14 @@ import { RootComponent } from './root.component';
 import { RequestsComponent } from './requests/requests.component';
 import { ExploreComponent } from './explore/explore.component';
 import { ToastNoAnimationModule } from 'ngx-toastr';
+import { AdminActionsComponent } from './admin_actions/admin_actions.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     RootComponent,
     DashboardComponent,
+    AdminActionsComponent,
     AuthComponent,
     ChatComponent,
     RequestsComponent,
